@@ -1,0 +1,115 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.controlsBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.leftControls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.tabList {
+  display: flex;
+  gap: var(--sp-2);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--sp-2);
+}
+
+.tabBtn {
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.tabBtn:hover {
+  background: var(--border-soft);
+  color: var(--ink);
+}
+
+.activeTab {
+  background: var(--accent-wash);
+  color: var(--accent);
+  border-color: var(--border);
+  font-weight: 600;
+}
+
+.statusPill {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.statusActive {
+  background: var(--accent-wash);
+  color: var(--accent);
+}
+
+.statusOverdue {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.statusReturned {
+  background: #f1f5f9;
+  color: var(--ink-soft);
+}
+
+.availTag {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.availNone {
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.dialogForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+
+.errorBanner {
+  padding: var(--sp-2) var(--sp-3);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}

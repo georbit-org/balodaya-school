@@ -1,0 +1,452 @@
+/* Homepage styles following the 8 layout blocks specification */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  padding-bottom: var(--sp-8);
+}
+
+/* 1. HERO BLOCK: Full-width banner with overlapping solid surface panel */
+.heroSection {
+  position: relative;
+  width: 100%;
+}
+
+.heroMediaWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: var(--surface-2);
+}
+
+@media (min-width: 768px) {
+  .heroMediaWrapper {
+    aspect-ratio: 16 / 7;
+  }
+}
+
+.heroImage {
+  object-fit: cover;
+  object-position: center;
+}
+
+.heroOverlayContainer {
+  position: relative;
+  margin-top: calc(-1 * var(--sp-7));
+  z-index: 2;
+}
+
+@media (min-width: 768px) {
+  .heroOverlayContainer {
+    margin-top: calc(-1 * var(--sp-9));
+  }
+}
+
+.heroCard {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-2);
+  padding: var(--sp-6);
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+@media (min-width: 768px) {
+  .heroCard {
+    padding: var(--sp-7);
+  }
+}
+
+.heroTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
+  margin: 0;
+}
+
+.heroMotto {
+  font-size: var(--text-lg);
+  color: var(--ink-soft);
+  margin: 0;
+  font-style: italic;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-3);
+}
+
+.heroSecondaryLink {
+  color: var(--accent);
+  font-weight: 500;
+  text-decoration: none;
+  font-size: var(--text-base);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius);
+  transition: color 0.15s var(--ease);
+}
+
+.heroSecondaryLink:hover {
+  color: var(--accent-strong);
+  text-decoration: underline;
+}
+
+/* 2. LETTER BLOCK: Centred column with chairman's message */
+.letterSection {
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+  border-block: 1px solid var(--sky-border);
+  padding-block: var(--sp-7);
+}
+
+.letterContent {
+  max-width: 720px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.letterEyebrow {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--sky-deep);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.letterHeading {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.letterQuote {
+  font-size: var(--text-lg);
+  line-height: 1.7;
+  color: var(--ink);
+  margin: 0;
+  font-style: italic;
+  border-left: 3px solid var(--sky-accent);
+  padding-left: var(--sp-4);
+}
+
+.letterSignoff {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding-top: var(--sp-2);
+}
+
+.chairmanPortrait {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius);
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
+.signoffInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.signoffName {
+  font-weight: 600;
+  font-size: var(--text-base);
+  color: var(--ink);
+}
+
+.signoffTitle {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.signoffLink {
+  margin-top: var(--sp-2);
+  font-size: var(--text-sm);
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.signoffLink:hover {
+  color: var(--accent-strong);
+  text-decoration: underline;
+}
+
+/* 3. ABOUT US: Two-column layout */
+.aboutGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-6);
+  align-items: center;
+}
+
+@media (min-width: 840px) {
+  .aboutGrid {
+    grid-template-columns: 1.2fr 1fr;
+    gap: var(--sp-7);
+  }
+}
+
+.aboutTextColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.sectionHeading {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.bodyText {
+  color: var(--ink-soft);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.aboutImageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background-color: var(--surface-2);
+}
+
+.aboutImage {
+  object-fit: cover;
+}
+
+/* 4. NOTICES SECTION: Clean list */
+.noticesSection {
+  background-color: var(--surface);
+  border: 1px solid var(--sky-border);
+  border-top: 3px solid var(--sky-accent);
+  border-radius: var(--radius);
+  padding: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.05);
+}
+
+.sectionHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: var(--sp-4);
+}
+
+.noticeList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  divide-y: 1px solid var(--line);
+}
+
+.noticeItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-block: var(--sp-3);
+  border-bottom: 1px solid var(--line);
+  gap: var(--sp-4);
+}
+
+.noticeItem:last-child {
+  border-bottom: none;
+}
+
+.noticeTitleLink {
+  color: var(--ink);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.noticeTitleLink:hover {
+  color: var(--accent);
+}
+
+.noticeMeta {
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+/* 5. PHOTO STRIP: 5 photos in a row */
+.photoStripSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.photoStripHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.photoStripTrack {
+  display: grid;
+  grid-template-columns: repeat(8, 240px);
+  gap: var(--sp-3);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: var(--sp-2);
+}
+
+@media (min-width: 1280px) {
+  .photoStripTrack {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+.stripItem {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  scroll-snap-align: start;
+  background-color: var(--surface-2);
+}
+
+.stripImage {
+  object-fit: cover;
+}
+
+/* 6. HOUSES BLOCK: 5 vertical coloured bars */
+.housesSection {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.housesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-4);
+}
+
+@media (min-width: 640px) {
+  .housesGrid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.houseCard {
+  border: 1px solid var(--line);
+  border-left-width: 6px;
+  background-color: var(--paper);
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.houseName {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.houseMotto {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* 7. HOW TO APPLY: 3 numbered steps */
+.applySection {
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-5);
+}
+
+@media (min-width: 768px) {
+  .stepsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.stepCard {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.stepNumber {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.stepText {
+  color: var(--ink);
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: 1.5;
+}
+
+.applyActions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: var(--sp-2);
+}
+
+/* 8. QUOTE LINE: Plain text quote */
+.quoteSection {
+  padding-block: var(--sp-4);
+  text-align: center;
+}
+
+.quoteText {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-style: italic;
+  color: var(--ink-soft);
+  margin: 0;
+}

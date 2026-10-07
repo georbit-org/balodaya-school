@@ -1,0 +1,263 @@
+/* Dynamic Hero Slideshow Styles with Refined Himalayan Sky Blue Tint */
+
+.carousel {
+  position: relative;
+  width: 100%;
+  outline: none;
+}
+
+.mediaWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: var(--navy);
+}
+
+@media (min-width: 768px) {
+  .mediaWrapper {
+    aspect-ratio: 16 / 7;
+    min-height: 480px;
+  }
+}
+
+.slideImageWrapper {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.8s cubic-bezier(0.2, 0, 0, 1), transform 6s linear;
+  transform: scale(1.03);
+}
+
+.slideActive {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  z-index: 1;
+}
+
+.image {
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Atmospheric Himalayan Sky Tint Wash Overlay */
+.skyAtmosphereOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(2, 132, 199, 0.12) 0%,
+    rgba(10, 37, 64, 0.35) 50%,
+    rgba(10, 37, 64, 0.85) 100%
+  );
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Tactile Floating Slideshow HUD Controls */
+.mediaControlsHud {
+  position: absolute;
+  top: var(--sp-4);
+  right: var(--sp-4);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  background: rgba(10, 37, 64, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(186, 230, 253, 0.28);
+  border-radius: var(--radius);
+  padding: 4px 8px;
+  color: var(--on-navy);
+  box-shadow: 0 4px 16px rgba(10, 37, 64, 0.4);
+}
+
+.slideCounter {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0 var(--sp-2);
+  color: var(--sky-tint);
+}
+
+.hudButton {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #FFFFFF;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: calc(var(--radius) - 2px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.15s var(--ease);
+}
+
+.hudButton:hover {
+  background: rgba(2, 132, 199, 0.35);
+  border-color: var(--sky-border);
+  color: #FFFFFF;
+}
+
+.hudButton:focus-visible {
+  outline: 2px solid var(--sky-border);
+  outline-offset: 1px;
+}
+
+/* Slide Progress Dots / Bars */
+.progressIndicatorBar {
+  position: absolute;
+  bottom: calc(var(--sp-8) + var(--sp-4));
+  left: 0;
+  right: 0;
+  z-index: 4;
+  display: flex;
+  justify-content: center;
+  gap: var(--sp-2);
+  pointer-events: none;
+}
+
+@media (max-width: 767px) {
+  .progressIndicatorBar {
+    bottom: calc(var(--sp-6) + var(--sp-2));
+  }
+}
+
+.progressPill {
+  width: 32px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+  pointer-events: auto;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  transition: width 0.3s var(--ease), background-color 0.2s var(--ease);
+}
+
+.progressPillActive {
+  background: var(--sky-accent);
+  width: 48px;
+}
+
+/* Overlapping Solid Card with Sky Blue Elevation */
+.overlayContainer {
+  position: relative;
+  margin-top: calc(-1 * var(--sp-7));
+  z-index: 5;
+}
+
+@media (min-width: 768px) {
+  .overlayContainer {
+    margin-top: calc(-1 * var(--sp-9));
+  }
+}
+
+.heroCard {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--sky-accent);
+  box-shadow: 0 14px 34px rgba(2, 132, 199, 0.09), 0 2px 8px rgba(12, 35, 60, 0.05);
+  border-radius: var(--radius);
+  padding: var(--sp-6);
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  transition: box-shadow 0.2s var(--ease);
+}
+
+@media (min-width: 768px) {
+  .heroCard {
+    padding: var(--sp-7);
+  }
+}
+
+.badgeChip {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--sky-deep);
+  background: var(--sky-tint);
+  border: 1px solid var(--sky-border);
+  padding: 4px 12px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  line-height: 1.18;
+  color: var(--ink);
+  margin: 0;
+}
+
+.heroSubtitle {
+  font-size: var(--text-base);
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: 0;
+  max-width: 65ch;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-2);
+}
+
+.primaryCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--sky-accent);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: var(--text-base);
+  padding: 10px 22px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+  transition: all 0.15s var(--ease);
+}
+
+.primaryCta:hover {
+  background-color: var(--sky-deep);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+  transform: translateY(-1px);
+}
+
+.secondaryCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: var(--text-base);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  transition: all 0.15s var(--ease);
+}
+
+.secondaryCta:hover {
+  color: var(--accent-strong);
+  text-decoration: underline;
+  background-color: var(--sky-tint);
+}

@@ -1,0 +1,101 @@
+.wrapper {
+  width: 100%;
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+
+.scrollArea {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+
+.th {
+  background-color: var(--surface-2);
+  color: var(--ink-soft);
+  font-weight: 600;
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--line-strong);
+  white-space: nowrap;
+}
+
+.tr {
+  border-bottom: 1px solid var(--line);
+  transition: background-color 0.1s var(--ease);
+}
+
+.tr:last-child {
+  border-bottom: none;
+}
+
+.tr:hover {
+  background-color: var(--surface-2);
+}
+
+.td {
+  padding: var(--sp-3) var(--sp-4);
+  color: var(--ink);
+  vertical-align: middle;
+}
+
+.loadingCell,
+.emptyCell {
+  padding: var(--sp-7) var(--sp-4);
+  text-align: center;
+  color: var(--ink-faint);
+  font-size: var(--text-base);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-3) var(--sp-4);
+  border-top: 1px solid var(--line);
+  background-color: var(--surface);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.pageControls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.pageBtn {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  padding: var(--sp-1) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background-color: var(--surface-2);
+  border-color: var(--line-strong);
+}
+
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pageNumber {
+  font-weight: 500;
+  padding: 0 var(--sp-2);
+}

@@ -1,0 +1,61 @@
+:root {
+  /* Colour - Refined Himalayan Sky Blue Palette */
+  --paper:        #EFF6FD;   /* crisp sky-tinted page background */
+  --surface:      #FFFFFF;   /* panels, tables, forms */
+  --surface-2:    #E3EFFB;   /* subtle sky bands, table headers, hover */
+  --line:         #CFE3F7;   /* borders with soft sky tone */
+  --line-strong:  #9EC3E6;
+  --ink:          #0C233C;   /* deep navy ink for high contrast AAA readability */
+  --ink-soft:     #355273;   /* secondary text, AA on paper */
+  --ink-faint:    #5B7898;   /* hints & muted labels */
+  --accent:       #0284C7;   /* vibrant Himalayan sky blue */
+  --accent-strong:#0369A1;   /* deep sky hover/active */
+  --accent-wash:  #E0F2FE;   /* selected rows, info highlight */
+  --sky-mist:     #F0F8FF;   /* serene mountain sky mist */
+  --sky-tint:     #E0F2FE;   /* soft sky wash */
+  --sky-border:   #BAE6FD;   /* delicate sky outline */
+  --sky-accent:   #0284C7;   /* vibrant sky blue */
+  --sky-deep:     #0369A1;   /* deep sky */
+  --navy:         #0A2540;   /* deep navy footer & dark contrast band */
+  --on-navy:      #E0F2FE;
+  --danger:       #B3261E;
+  --danger-wash:  #FBEAE8;
+  --success:      #1E7A46;
+  --success-wash: #E6F4EB;
+  --warning:      #8A5A00;
+  --warning-wash: #FBF1DC;
+  --focus:        #0284C7;
+
+  /* House colours: used ONLY for houses */
+  --house-red:    #C62F2F;
+  --house-yellow: #E0A800;
+  --house-blue:   #1F63C2;
+  --house-green:  #2E8B4E;
+  --house-orange: #E8751A;
+
+  /* Type */
+  --font-heading: var(--font-newsreader), Georgia, serif;
+  --font-body:    var(--font-hanken), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-nepali:  var(--font-noto-serif-deva), serif;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   clamp(1.35rem, 1.1rem + 0.8vw, 1.75rem);
+  --text-2xl:  clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem);
+  --text-3xl:  clamp(2.25rem, 1.5rem + 3vw, 3.75rem);
+
+  /* Space (4px scale) */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 72px; --sp-9: 112px;
+
+  /* Shape */
+  --radius: 6px;
+  --shadow-1: 0 1px 2px rgba(14, 34, 56, 0.08);
+  --shadow-2: 0 8px 24px rgba(14, 34, 56, 0.10);
+
+  --container: 1200px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --sidebar-w: 248px;
+  --topbar-h: 56px;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+}

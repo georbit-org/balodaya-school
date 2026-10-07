@@ -1,0 +1,106 @@
+.controlBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  background: var(--surface);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.selectGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.selectGroup label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+}
+
+.selectInput {
+  height: 38px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.gridWrapper {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.timetableTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.timetableTable th,
+.timetableTable td {
+  border: 1px solid var(--border);
+  padding: var(--space-2);
+  text-align: center;
+}
+
+.timetableTable th {
+  background: var(--surface-alt);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+.dayHeader {
+  width: 120px;
+  text-align: left !important;
+  padding-left: var(--space-3) !important;
+  background: var(--surface-alt) !important;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--navy);
+}
+
+.cellCard {
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.cellCard:hover {
+  background: var(--surface-alt);
+}
+
+.cellSubject {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.cellTeacher {
+  font-size: 11px;
+  color: var(--ink-muted);
+  margin-top: 2px;
+}
+
+.cellEmpty {
+  color: var(--ink-muted);
+  font-size: 11px;
+}

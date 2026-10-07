@@ -1,0 +1,106 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.controlsBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.roleFilter {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.roleBtn {
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.roleBtn:hover {
+  background: var(--border-soft);
+  color: var(--ink);
+}
+
+.activeRole {
+  background: var(--accent-wash);
+  color: var(--accent);
+  border-color: var(--border);
+  font-weight: 600;
+}
+
+.roleBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.roleAdmin {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.rolePrincipal {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.roleTeacher {
+  background: var(--accent-wash);
+  color: var(--accent);
+}
+
+.roleAccountant {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.tagSubject {
+  display: inline-block;
+  background: var(--border-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-right: 4px;
+  margin-bottom: 2px;
+}
+
+.dialogForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.errorBanner {
+  padding: var(--sp-2) var(--sp-3);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+}

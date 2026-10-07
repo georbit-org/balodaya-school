@@ -1,0 +1,167 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px;
+  background: #ffffff;
+  color: #1a1a1a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.noPrintBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.schoolHeader {
+  text-align: center;
+  border-bottom: 2px solid #002147;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.schoolName {
+  font-size: 22px;
+  font-weight: 800;
+  color: #002147;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.schoolAddress {
+  font-size: 13px;
+  color: #555555;
+  margin-bottom: 6px;
+}
+
+.docTitle {
+  display: inline-block;
+  padding: 4px 16px;
+  background: #002147;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 24px;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+.metaItem {
+  display: flex;
+  border-bottom: 1px dotted #ccc;
+  padding-bottom: 4px;
+}
+
+.metaLabel {
+  width: 140px;
+  font-weight: 600;
+  color: #444444;
+}
+
+.metaValue {
+  font-weight: 700;
+  color: #000000;
+}
+
+.marksTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+  font-size: 13px;
+}
+
+.marksTable th,
+.marksTable td {
+  border: 1px solid #333333;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.marksTable th {
+  background: #f0f4f8;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.marksTable td.center {
+  text-align: center;
+}
+
+.marksTable td.bold {
+  font-weight: 700;
+}
+
+.summaryBox {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #333333;
+  margin-bottom: 40px;
+  font-size: 13px;
+}
+
+.summaryItem {
+  text-align: center;
+}
+
+.summaryLabel {
+  font-size: 11px;
+  color: #555555;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.summaryValue {
+  font-size: 16px;
+  font-weight: 800;
+  color: #002147;
+}
+
+.signatureRow {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 60px;
+  padding: 0 20px;
+}
+
+.sigBlock {
+  text-align: center;
+  width: 180px;
+}
+
+.sigLine {
+  border-top: 1px solid #333333;
+  padding-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #222222;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
+  }
+  .noPrintBar {
+    display: none !important;
+  }
+  .container {
+    padding: 0;
+    max-width: 100%;
+  }
+}

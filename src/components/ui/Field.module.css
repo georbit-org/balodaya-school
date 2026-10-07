@@ -1,0 +1,65 @@
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-4);
+  width: 100%;
+}
+
+.label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.requiredMark {
+  color: var(--danger);
+}
+
+.control {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--ink);
+  background-color: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: var(--sp-2) var(--sp-3);
+  height: 40px;
+  outline: none;
+  transition: border-color 0.15s var(--ease);
+}
+
+.control:focus {
+  border-color: var(--focus);
+}
+
+.textarea {
+  height: auto;
+  min-height: 88px;
+  resize: vertical;
+}
+
+.select {
+  cursor: pointer;
+}
+
+.hasError {
+  border-color: var(--danger);
+  background-color: var(--danger-wash);
+}
+
+.hint {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+  margin: 0;
+}
+
+.error {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--danger);
+  margin: 0;
+}

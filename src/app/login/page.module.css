@@ -1,0 +1,150 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 840px) {
+  .container {
+    flex-direction: row;
+  }
+}
+
+/* LEFT BRAND PANEL */
+.brandPanel {
+  background-color: var(--navy);
+  color: var(--on-navy);
+  padding: var(--sp-7);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--sp-6);
+}
+
+@media (min-width: 840px) {
+  .brandPanel {
+    flex: 1;
+    max-width: 460px;
+    padding: var(--sp-8);
+  }
+}
+
+.brandContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  align-items: flex-start;
+}
+
+.logoWrapper {
+  background-color: #FFFFFF;
+  padding: var(--sp-2);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.schoolName {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: #FFFFFF;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.motto {
+  font-size: var(--text-base);
+  color: var(--line-strong);
+  font-style: italic;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.brandFooter {
+  font-size: var(--text-sm);
+  color: var(--line-strong);
+}
+
+.homeLink {
+  color: var(--on-navy);
+  text-decoration: none;
+  display: inline-block;
+  margin-top: var(--sp-2);
+}
+
+.homeLink:hover {
+  text-decoration: underline;
+}
+
+/* RIGHT FORM PANEL */
+.formPanel {
+  flex: 1;
+  background-color: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6);
+}
+
+@media (min-width: 840px) {
+  .formPanel {
+    padding: var(--sp-8);
+  }
+}
+
+.card {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+  padding: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+@media (min-width: 480px) {
+  .card {
+    padding: var(--sp-7);
+  }
+}
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.cardSubtitle {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.errorAlert {
+  background-color: var(--danger-wash);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: var(--radius);
+  padding: var(--sp-3);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}

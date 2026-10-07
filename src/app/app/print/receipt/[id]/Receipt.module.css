@@ -1,0 +1,165 @@
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 30px;
+  background: #ffffff;
+  color: #1a1a1a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.noPrintBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.schoolHeader {
+  text-align: center;
+  border-bottom: 2px solid #002147;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.schoolName {
+  font-size: 20px;
+  font-weight: 800;
+  color: #002147;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.schoolAddress {
+  font-size: 13px;
+  color: #555555;
+  margin-bottom: 6px;
+}
+
+.docTitle {
+  display: inline-block;
+  padding: 4px 14px;
+  background: #002147;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 4px;
+  margin-top: 6px;
+}
+
+.receiptMetaRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 20px;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.metaItem {
+  display: flex;
+}
+
+.metaLabel {
+  width: 120px;
+  color: #555555;
+  font-weight: 600;
+}
+
+.metaValue {
+  font-weight: 700;
+  color: #111111;
+}
+
+.itemsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+.itemsTable th,
+.itemsTable td {
+  border: 1px solid #cccccc;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.itemsTable th {
+  background: #f1f5f9;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.itemsTable td.right {
+  text-align: right;
+}
+
+.totalsBlock {
+  margin-left: auto;
+  width: 280px;
+  margin-bottom: 30px;
+  font-size: 13px;
+}
+
+.totalsRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.totalsRow.bold {
+  border-top: 1px solid #333333;
+  border-bottom: 2px solid #333333;
+  font-weight: 800;
+  font-size: 14px;
+  color: #002147;
+  margin-top: 4px;
+}
+
+.signatureArea {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 50px;
+  padding: 0 10px;
+}
+
+.sigBlock {
+  text-align: center;
+  width: 160px;
+}
+
+.sigLine {
+  border-top: 1px solid #333333;
+  padding-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
+  }
+  .noPrintBar {
+    display: none !important;
+  }
+  .container {
+    padding: 0;
+    max-width: 100%;
+  }
+}

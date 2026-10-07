@@ -1,0 +1,366 @@
+export interface GalleryItem {
+  id: string;
+  src: string;
+  title: string;
+  category: 'Assemblies & Campus Life' | 'Sports & House Honors' | 'Events & Celebrations' | 'Campus & Facilities' | 'Faculty & Leadership';
+  description?: string;
+}
+
+export const GALLERY_CATEGORIES = [
+  'All',
+  'Assemblies & Campus Life',
+  'Sports & House Honors',
+  'Events & Celebrations',
+  'Campus & Facilities',
+  'Faculty & Leadership',
+] as const;
+
+export type GalleryCategory = typeof GALLERY_CATEGORIES[number];
+
+export const SCHOOL_GALLERY_PHOTOS: GalleryItem[] = [
+  // Assemblies & Daily Life
+  {
+    id: 'banner-assembly',
+    src: '/assets/images/home_page/banner/original/1689073694-1Banner1.jpg',
+    title: 'Morning School Assembly & Parade',
+    category: 'Assemblies & Campus Life',
+    description: 'Whole school assembly and disciplined morning parade formation in the central courtyard.',
+  },
+  {
+    id: 'banner-uniforms',
+    src: '/assets/images/home_page/banner/original/1689073769-2Banner2.jpg',
+    title: 'Students in Formal School Uniform',
+    category: 'Assemblies & Campus Life',
+    description: 'Balodaya students dressed in academic uniform during morning roll-call.',
+  },
+  {
+    id: 'banner-junior',
+    src: '/assets/images/home_page/banner/original/1689073824-3Banner3.jpg',
+    title: 'Primary & Junior Assembly Formation',
+    category: 'Assemblies & Campus Life',
+    description: 'Junior grade students gathered for the daily morning pledge and prayer.',
+  },
+  {
+    id: 'banner-flag',
+    src: '/assets/images/home_page/banner/original/1689073856-4Banner4.jpg',
+    title: 'National Anthem & Flag Ceremony',
+    category: 'Assemblies & Campus Life',
+    description: 'Solemn national anthem and flag hoisting ceremony led by the student council.',
+  },
+  {
+    id: 'banner-seniors',
+    src: '/assets/images/home_page/banner/original/1689073923-5Banner5.jpg',
+    title: 'Senior Secondary Students Assembly',
+    category: 'Assemblies & Campus Life',
+    description: 'Secondary students during daily morning announcements and house alignments.',
+  },
+  {
+    id: 'banner-campus-wide',
+    src: '/assets/images/home_page/banner/original/1689085439-7Banner7.jpeg',
+    title: 'Balodaya Campus Overview',
+    category: 'Assemblies & Campus Life',
+    description: 'Aerial perspective of students assembling in the school grounds.',
+  },
+  {
+    id: 'banner-classroom-life',
+    src: '/assets/images/home_page/banner/original/1689139552-IMG-20230711-WA0028.jpg',
+    title: 'Classroom Instruction & Interactive Learning',
+    category: 'Assemblies & Campus Life',
+    description: 'Students engaged in interactive problem-solving inside the classroom.',
+  },
+
+  // Sports & Houses
+  {
+    id: 'houses-athletics',
+    src: '/assets/images/houses/top.jpeg',
+    title: 'Annual Inter-House Athletics Championships',
+    category: 'Sports & House Honors',
+    description: 'Athletes competing on track and field representing their collegiate houses.',
+  },
+  {
+    id: 'houses-parade',
+    src: '/assets/images/houses/houses_banner1.JPG',
+    title: 'Collegiate House March Past & Parade',
+    category: 'Sports & House Honors',
+    description: 'Red, Blue, Green, Yellow, and Orange house squads parading in sports uniform.',
+  },
+  {
+    id: 'houses-trophy-1',
+    src: '/assets/images/houses/prize1.jpeg',
+    title: 'Annual Sports Day Trophy Presentation',
+    category: 'Sports & House Honors',
+    description: 'School leadership awarding running trophies to championship house captains.',
+  },
+  {
+    id: 'houses-trophy-2',
+    src: '/assets/images/houses/prize2.jpeg',
+    title: 'Inter-School Tournament Felicitation',
+    category: 'Sports & House Honors',
+    description: 'Felicitation ceremony recognizing medals and trophies achieved in district competitions.',
+  },
+  {
+    id: 'houses-training',
+    src: '/assets/images/houses/eca.jpeg',
+    title: 'Physical Education & Athletics Drill',
+    category: 'Sports & House Honors',
+    description: 'Students undergoing structured physical fitness and sports training.',
+  },
+  {
+    id: 'houses-victory',
+    src: '/assets/images/council_leader_page/winning.jpeg',
+    title: 'Championship Trophy Celebration',
+    category: 'Sports & House Honors',
+    description: 'Students and sports masters celebrating the overall inter-house trophy victory.',
+  },
+
+  // Events & Celebrations
+  {
+    id: 'events-yoga-1',
+    src: '/assets/images/gallery/1/original/1691748192-YogaDay.jpg',
+    title: 'International Yoga Day Mass Demonstration',
+    category: 'Events & Celebrations',
+    description: 'Whole school yoga asana session focusing on physical health and mental focus.',
+  },
+  {
+    id: 'events-yoga-2',
+    src: '/assets/images/gallery/1/original/1691749284-YogaDay.jpg',
+    title: 'Yoga Asanas & Wellness Session',
+    category: 'Events & Celebrations',
+    description: 'Students performing synchronized pranayama and stretching routines on campus.',
+  },
+  {
+    id: 'events-ocean-day',
+    src: '/assets/images/gallery/1/original/1688706944-OceanDay.jpg',
+    title: 'World Ocean Day Environmental Exhibition',
+    category: 'Events & Celebrations',
+    description: 'Science and geography students presenting marine ecology charts and charts.',
+  },
+  {
+    id: 'events-environment-day',
+    src: '/assets/images/gallery/1/original/1688713867-WorldEnvironmentDay.jpg',
+    title: 'World Environment Day Plantation Campaign',
+    category: 'Events & Celebrations',
+    description: 'Students planting saplings and raising ecological awareness in Bheerkot.',
+  },
+  {
+    id: 'events-summit',
+    src: '/assets/images/gallery/1/original/1688713865-G20Summit.jpg',
+    title: 'Student Model Summit & Presentations',
+    category: 'Events & Celebrations',
+    description: 'Academic presentations discussing international cooperation and sustainability.',
+  },
+  {
+    id: 'events-debate',
+    src: '/assets/images/gallery/1/original/1691748399-Experra interschool English debate competition.jpg',
+    title: 'Interschool English Debate Champions',
+    category: 'Events & Celebrations',
+    description: 'Balodaya debate team winning accolades in the regional English debate contest.',
+  },
+  {
+    id: 'events-awareness',
+    src: '/assets/images/gallery/1/original/1691748350-DrugAbuse.jpg',
+    title: 'Youth Health & Anti-Drug Awareness Campaign',
+    category: 'Events & Celebrations',
+    description: 'Social awareness rally conducted by senior students promoting healthy lifestyles.',
+  },
+  {
+    id: 'events-craft-1',
+    src: '/assets/images/gallery/1/original/1688705351-cocurricular1.jpg',
+    title: 'Creative Art & Craft Exhibition',
+    category: 'Events & Celebrations',
+    description: 'Student artworks, paintings, and handmade crafts presented for parents.',
+  },
+  {
+    id: 'events-craft-2',
+    src: '/assets/images/gallery/1/original/1688705352-cocurricular2.jpg',
+    title: 'Co-curricular Projects & Science Fair',
+    category: 'Events & Celebrations',
+    description: 'Science models and practical experiments designed by students.',
+  },
+  {
+    id: 'events-craft-3',
+    src: '/assets/images/gallery/1/original/1688705352-cocurricular3.jpg',
+    title: 'Student Handiwork & Exhibits',
+    category: 'Events & Celebrations',
+    description: 'Display of student creative models and architectural replicas.',
+  },
+  {
+    id: 'events-craft-4',
+    src: '/assets/images/gallery/1/original/1688705352-cocurricular4.jpg',
+    title: 'Cultural Heritage Exhibition',
+    category: 'Events & Celebrations',
+    description: 'Traditional Nepali cultural exhibits, artifacts, and regional clothing display.',
+  },
+  {
+    id: 'events-craft-5',
+    src: '/assets/images/gallery/1/original/1688705352-cocurricular5.jpg',
+    title: 'Interactive Learning Demonstrations',
+    category: 'Events & Celebrations',
+    description: 'Students demonstrating mechanics and social science models to visitors.',
+  },
+  {
+    id: 'events-craft-6',
+    src: '/assets/images/gallery/1/original/1688705352-cocurricular6.jpg',
+    title: 'Student Innovation Displays',
+    category: 'Events & Celebrations',
+    description: 'Practical technology experiments and eco-friendly solutions made by learners.',
+  },
+  {
+    id: 'events-craft-7',
+    src: '/assets/images/gallery/1/original/1688706781-cocurricular7.jpg',
+    title: 'Community Project Presentation',
+    category: 'Events & Celebrations',
+    description: 'Community outreach and civic engagement projects presented during open house.',
+  },
+  {
+    id: 'events-dance-1',
+    src: '/assets/images/gallery/1/original/1701233091-C1.jpeg',
+    title: 'Traditional Cultural Dance Performance',
+    category: 'Events & Celebrations',
+    description: 'Students in ethnic Nepali attire performing traditional folk choreography.',
+  },
+  {
+    id: 'events-dance-2',
+    src: '/assets/images/gallery/1/original/1701233092-C3.jpeg',
+    title: 'Folk Music & Annual Stage Presentation',
+    category: 'Events & Celebrations',
+    description: 'Musical drama and regional dance performance on the school auditorium stage.',
+  },
+  {
+    id: 'events-dance-3',
+    src: '/assets/images/gallery/1/original/1701233092-C4.jpeg',
+    title: 'Annual Day Musical Drama & Finale',
+    category: 'Events & Celebrations',
+    description: 'Ensemble dance performance celebrating national unity and heritage.',
+  },
+
+  // Campus & Facilities
+  {
+    id: 'facility-building',
+    src: '/assets/images/vision-mission/building.jpeg',
+    title: 'Balodaya Secondary School Main Academic Block',
+    category: 'Campus & Facilities',
+    description: 'Modern multi-story school building located in Sundar Bazar, Bheerkot-06, Syangja.',
+  },
+  {
+    id: 'facility-panorama',
+    src: '/assets/images/vision-mission/long.jpg',
+    title: 'Panoramic Campus Grounds & Playground',
+    category: 'Campus & Facilities',
+    description: 'Spacious school grounds, assembly quadrangle, and sports courts against the hills.',
+  },
+  {
+    id: 'facility-valley-view',
+    src: '/assets/images/long2.jpg',
+    title: 'Scenic Himalayan Foothill Campus Setting',
+    category: 'Campus & Facilities',
+    description: 'Serene natural surroundings providing an undisturbed academic atmosphere.',
+  },
+  {
+    id: 'facility-digicamp-1',
+    src: '/assets/images/facilities/Digicamp1.JPG',
+    title: 'Computer Science Laboratory (Digicamp)',
+    category: 'Campus & Facilities',
+    description: 'Modern networked computer room equipped for ICT classes, programming, and digital learning.',
+  },
+  {
+    id: 'facility-digicamp-2',
+    src: '/assets/images/facilities/Digicamp2.PNG',
+    title: 'Smart Classroom & Digital Learning Suite',
+    category: 'Campus & Facilities',
+    description: 'Audio-visual equipped teaching hall for digital lectures and interactive presentations.',
+  },
+  {
+    id: 'facility-bus-1',
+    src: '/assets/images/facilities/transport1.JPG',
+    title: 'School Transport Bus No. 1 (Bayarghari Route)',
+    category: 'Campus & Facilities',
+    description: 'Dedicated yellow school bus serving Bayarghari, Darsing, and Sundar Bazar.',
+  },
+  {
+    id: 'facility-bus-2',
+    src: '/assets/images/facilities/transport2.JPG',
+    title: 'School Transport Bus No. 2 (Waling Route)',
+    category: 'Campus & Facilities',
+    description: 'School transport vehicle serving Waling, Jagatbhanjyang, and highway corridors.',
+  },
+  {
+    id: 'facility-bus-3',
+    src: '/assets/images/facilities/transport3.JPG',
+    title: 'Student Transport Fleet Vehicle No. 3',
+    category: 'Campus & Facilities',
+    description: 'Well-maintained student transit vehicle with safety belts and first-aid kits.',
+  },
+  {
+    id: 'facility-bus-4',
+    src: '/assets/images/facilities/transport4.JPG',
+    title: 'Campus Transport Depot & Parking Bay',
+    category: 'Campus & Facilities',
+    description: 'Designated student boarding and vehicle parking grounds on the campus perimeter.',
+  },
+
+  // Faculty & Leadership
+  {
+    id: 'lead-chairman',
+    src: '/assets/images/leadership/chairman.JPG',
+    title: 'Founder & Chairman',
+    category: 'Faculty & Leadership',
+    description: 'Founding Chairman providing strategic direction and stewardship to the institution.',
+  },
+  {
+    id: 'lead-principal',
+    src: '/assets/images/leadership/principal1.jpg',
+    title: 'Principal & Academic Head',
+    category: 'Faculty & Leadership',
+    description: 'School Principal leading daily academic administration and pedagogical excellence.',
+  },
+  {
+    id: 'lead-teachers',
+    src: '/assets/images/leadership/teachers_photo.jpg',
+    title: 'Balodaya Teaching Faculty & Staff',
+    category: 'Faculty & Leadership',
+    description: 'Dedicated group of experienced teachers across Primary, Lower Secondary, and Secondary levels.',
+  },
+  {
+    id: 'lead-council-chair',
+    src: '/assets/images/council_leader_page/CouncilTeamWithChairman.JPG',
+    title: 'Student Council Leaders with Chairman',
+    category: 'Faculty & Leadership',
+    description: 'Elected student prefects and captains meeting with the Chairman for leadership review.',
+  },
+  {
+    id: 'lead-council-heads',
+    src: '/assets/images/council_leader_page/head.jpeg',
+    title: 'Head Boy & Head Girl Investiture',
+    category: 'Faculty & Leadership',
+    description: 'Induction of the student council executive captains during annual investiture.',
+  },
+  {
+    id: 'lead-founder',
+    src: '/assets/images/history/founder.jpeg',
+    title: 'Founding Members of Balodaya School (2063 B.S.)',
+    category: 'Faculty & Leadership',
+    description: 'The visionary educators and community patrons who founded Balodaya School.',
+  },
+  {
+    id: 'lead-founder-admin',
+    src: '/assets/images/history/founder_principal1.jpg',
+    title: 'Founding Administration & Early Faculty',
+    category: 'Faculty & Leadership',
+    description: 'Early academic leaders who laid the foundation for quality English-medium education.',
+  },
+  {
+    id: 'lead-historic-milestone',
+    src: '/assets/images/history/1.jpg',
+    title: 'Campus Foundation Stone & School Milestone',
+    category: 'Faculty & Leadership',
+    description: 'Historic ceremony marking the school’s academic journey in Bheerkot.',
+  },
+  {
+    id: 'lead-historic-assembly',
+    src: '/assets/images/history/2.jpg',
+    title: 'Historical School Gathering & Assembly',
+    category: 'Faculty & Leadership',
+    description: 'Early student body gathered for annual anniversary celebrations.',
+  },
+];

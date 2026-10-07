@@ -1,0 +1,259 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  padding-block: var(--sp-6) var(--sp-9);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  scroll-margin-top: calc(var(--topbar-h) + var(--sp-4));
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: var(--sp-3);
+}
+
+/* ORIGIN */
+.originGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-6);
+  align-items: start;
+}
+
+@media (min-width: 840px) {
+  .originGrid {
+    grid-template-columns: 1.2fr 1fr;
+  }
+}
+
+.originText {
+  color: var(--ink-soft);
+  font-size: var(--text-base);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.originPhotos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+
+.originPhotoWrapper {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background-color: var(--surface-2);
+}
+
+.originPhoto {
+  object-fit: cover;
+}
+
+/* VISION & MISSION */
+.visionMissionGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-6);
+}
+
+@media (min-width: 768px) {
+  .visionMissionGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.card {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.cardHeading {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.cardBody {
+  color: var(--ink-soft);
+  font-size: var(--text-base);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* LEADERSHIP */
+.leadershipGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-6);
+}
+
+@media (min-width: 768px) {
+  .leadershipGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.leaderCard {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.leaderHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.leaderPhoto {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius);
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
+.leaderMeta {
+  display: flex;
+  flex-direction: column;
+}
+
+.leaderName {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.leaderTitle {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.leaderMessage {
+  font-size: var(--text-base);
+  color: var(--ink-soft);
+  line-height: 1.65;
+  margin: 0;
+  font-style: italic;
+  border-left: 3px solid var(--accent);
+  padding-left: var(--sp-3);
+}
+
+.teamBlock {
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.teamQuote {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-style: italic;
+  color: var(--ink);
+  margin: 0;
+  text-align: center;
+}
+
+.teamPhotosGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-4);
+}
+
+@media (min-width: 640px) {
+  .teamPhotosGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.teamPhotoWrapper {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+/* RULES */
+.rulesContainer {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.rulesIntro {
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.downloadRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.downloadIcon {
+  font-size: 1.5rem;
+  color: var(--accent);
+}
+
+.downloadDetails {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.downloadTitle {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.downloadTitle:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.downloadMeta {
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+}

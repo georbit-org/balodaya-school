@@ -1,0 +1,27 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.dialogForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.errorBanner {
+  padding: var(--sp-2) var(--sp-3);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+}

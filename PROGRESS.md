@@ -1,0 +1,79 @@
+# Balodaya Web Implementation Progress
+
+## Task Checklist
+- [x] 0.1 Progress file created
+- [x] 0.2 Dependencies installed (`@libsql/client`, `bcryptjs`, `jose`, `@types/bcryptjs`)
+- [x] 0.3 Next.js 16 breaking changes verified and documented (async params/searchParams, async cookies(), React 19 concurrent guards)
+- [x] 1.1 Missing photos copied from sweb2-master without private files
+- [x] 1.2 Content modules created in `src/content/` with asset path verification
+- [x] 1.3 Image optimisation rules applied (no raw `<img>`)
+- [x] 2.1 Tokens and base CSS reset with strict light-blue identity
+- [x] 2.2 Root layout updated with clean typography and metadata
+- [x] 2.3 UI kit created in `src/components/ui/` with CSS modules
+- [x] 3.1 SiteHeader and SiteFooter built with clean navigation
+- [x] 3.2 Homepage built with 8 varied honest blocks
+- [x] 3.3 About page with Origin, Vision, Leadership, Rules
+- [x] 3.4 Academics page with class levels and dynamic subjects
+- [x] 3.5 Admissions page with verified policy and working online application
+- [x] 3.6 Student Life page with 5 collegiate houses and real council roster
+- [x] 3.7 Facilities page with real photos and clean captions
+- [x] 3.8 Gallery page with photos masonry, lightbox, and videos
+- [x] 3.9 News page with real published notices and events
+- [x] 3.10 Student auxiliary pages (Results, Resources, Timetable, TC request, Alumni, Testimonials)
+- [x] 3.11 Tenders page
+- [x] 3.12 Careers page with vacancies and job application
+- [x] 3.13 Contact page with map link and working message form
+- [x] 3.14 SEO and redirects configured
+- [x] 4.1 `.env.example` and `.env.local` configured
+- [x] 4.2 SQLite database initialized with real schema and seed script
+- [x] 4.3 Real session auth, cookies, passwords, and API guards
+- [x] 4.4 Clean `/login` page with role redirect
+- [x] 4.5 App shell with responsive sidebar and role-filtered navigation
+- [x] 4.6 Users and staff management module
+- [x] 5.1 Settings: academic years, classes, sections, subjects
+- [x] 5.2 Online admissions application management and student conversion
+- [x] 5.3 Complete student directory and student profile tabs
+- [x] 5.4 Daily attendance tracking and monthly reporting
+- [x] 5.5 Leave request workflow with attendance integration
+- [x] 5.6 Exams, marks entry grid, ranking, and marksheet printing
+- [x] 5.7 Fee structure, invoice generation, receipts, and dues report
+- [x] 6.1 Timetable scheduling with collision detection
+- [x] 6.2 Notices and announcements management
+- [x] 6.3 Library management with loan tracking
+- [x] 6.4 School transport routes and passenger rosters
+- [x] 6.5 Five houses and house points leaderboard
+- [x] 6.6 Resource uploads (question banks, exam portions)
+- [x] 6.7 Website CMS modules (vacancies, tenders, incoming messages)
+- [x] 6.8 Staff directory
+- [x] 7.1 Role-specific dashboards (Admin, Principal, Teacher, Accountant, Parent, Student)
+- [x] 7.2 CSV exports for all operational data
+- [x] 7.3 Clean A4 print layouts for receipts, marksheets, and certificates
+- [x] 7.4 Account password management
+- [x] 8.1 Mobile responsiveness verification across breakpoints
+- [x] 8.2 Accessibility verification
+- [x] 8.3 Performance validation
+- [x] 9.1 Deletion of obsolete files, fake data, and unused Payload/Three.js dependencies
+- [x] 9.2 Real project README.md
+- [x] 9.3 Production Dockerfile configuration
+- [x] 10.1 Automated smoke test execution
+- [x] 10.2 Role-based manual verification
+- [x] 10.3 Anti-slop / anti-generic quality gates passing
+- [x] 10.4 Final build and lint gates passed
+- [x] 11.1 Dynamic Hero Slideshow with smooth crossfade, accessible tactile HUD, and authentic Balodaya photography
+- [x] 11.2 Sky-blue theme tilt across tokens, Hero overlay, cards, and homepage sections
+- [x] 11.3 Admin & Teacher SMS management portal for Hero Slideshow (`/app/hero-slides`)
+- [x] 11.4 Public & Admin APIs for Hero Slides (`/api/hero-slides`, `/api/admin/hero-slides`, `/upload`, `/media-library`)
+- [x] 11.5 Automated smoke suite updated (51/51 passed) & production build passed with 0 errors
+
+## Decisions
+- D1: Standalone SQLite DB with `@libsql/client` replacing mock in-memory database and unused Payload wiring.
+- D2: Secure JWT sessions via `jose` and `bcryptjs` password hashing.
+- D3: Print-friendly HTML/CSS for all formal academic receipts and certificates.
+- D4: Static verified school history in `src/content/`, dynamic operational records in database.
+- D5: Clean English user interface with authentic Nepali motto and Devanagari crest typography.
+- D6: Configurable academic hierarchy supporting Nursery through Class 12.
+
+## Needs School Confirmation
+- Final class range confirmation (Nursery through Class 10 vs Class 12).
+- Annual fee schedules and exact transport stop list.
+- Academic council roster update for 2083/84 B.S.
