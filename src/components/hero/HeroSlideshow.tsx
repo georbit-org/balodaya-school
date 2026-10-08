@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import type { HeroSlideRecord } from '@/app/api/hero-slides/route';
 import styles from './HeroSlideshow.module.css';
 
@@ -78,8 +77,6 @@ export function HeroSlideshow({ initialSlides }: HeroSlideshowProps) {
   if (slideCount === 0) {
     return null;
   }
-
-  const currentSlide = activeSlides[currentIndex] || activeSlides[0];
 
   return (
     <section
@@ -169,41 +166,6 @@ export function HeroSlideshow({ initialSlides }: HeroSlideshowProps) {
               onClick={() => setCurrentIndex(idx)}
             />
           ))}
-        </div>
-      </div>
-
-      {/* Overlapping Surface Card with Sky Blue Elevation */}
-      <div className={`container ${styles.overlayContainer}`}>
-        <div className={styles.heroCard}>
-          {currentSlide.badge && (
-            <div className={styles.badgeChip}>
-              <span>{currentSlide.badge}</span>
-            </div>
-          )}
-
-          <h1 className={styles.heroTitle}>{currentSlide.title}</h1>
-
-          {currentSlide.subtitle && (
-            <p className={styles.heroSubtitle}>{currentSlide.subtitle}</p>
-          )}
-
-          <div className={styles.heroActions}>
-            <Link
-              href={currentSlide.primary_cta_link || currentSlide.primaryCtaLink || '/admissions'}
-              className={styles.primaryCta}
-            >
-              {currentSlide.primary_cta_text || currentSlide.primaryCtaText || 'Apply for admission'} &rarr;
-            </Link>
-
-            {(currentSlide.secondary_cta_link || currentSlide.secondaryCtaLink) && (
-              <Link
-                href={currentSlide.secondary_cta_link || currentSlide.secondaryCtaLink || '/contact'}
-                className={styles.secondaryCta}
-              >
-                {currentSlide.secondary_cta_text || currentSlide.secondaryCtaText || 'Contact us'} &rarr;
-              </Link>
-            )}
-          </div>
         </div>
       </div>
     </section>

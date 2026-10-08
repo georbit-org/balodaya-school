@@ -60,6 +60,8 @@ export default async function HomePage() {
 
   return (
     <div className={styles.page}>
+      <h1 className="srOnly">{SCHOOL_INFO.name} — Bheerkot, Syangja</h1>
+
       {/* BLOCK 1: DYNAMIC HERO SLIDESHOW */}
       <HeroSlideshow initialSlides={heroSlides} />
 
