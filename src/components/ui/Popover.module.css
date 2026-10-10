@@ -1,0 +1,46 @@
+.wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.trigger {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + var(--sp-2));
+  z-index: var(--z-popover);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-3);
+  min-width: 200px;
+  max-width: 380px;
+  overflow: hidden;
+  animation: popoverFadeIn var(--t-fast) var(--ease);
+}
+
+.panelRight {
+  right: 0;
+}
+
+.panelLeft {
+  left: 0;
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

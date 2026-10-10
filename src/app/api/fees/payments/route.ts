@@ -1,5 +1,5 @@
 import { requireRole, requireUser } from '@/server/guard';
-import { one, run } from '@/server/db';
+import { query, one, run } from '@/server/db';
 import { handle, json, HttpError } from '@/server/http';
 
 export const POST = handle(async (req: Request) => {
@@ -68,4 +68,52 @@ export const POST = handle(async (req: Request) => {
     receiptNo,
     remainingBalance,
   }, 201);
+});
+
+export const GET = handle(async (req: Request) => {
+  await requireRole('admin', 'principal', 'accountant');
+  const { searchParams } = new URL(req.url);
+  const q = searchParams.get('q')?.trim() || '';
+  const method = searchParams.get('method')?.trim() || '';
+  const dateFrom = searchParams.get('from')?.trim() || '';
+  const dateTo = searchParams.get('to')?.trim() || '';
+
+  let sql = `
+    SELECT p.id, p.receipt_no, p.invoice_id, p.amount, p.method, p.reference, p.paid_on, p.created_at,
+           u.name as collector_name,
+           s.id as student_id, s.full_name as student_name, s.admission_no,
+           c.name as class_name, sec.name as section_name,
+           i.title as invoice_title
+    FROM payments p
+    JOIN invoices i ON p.invoice_id = i.id
+    JOIN students s ON i.student_id = s.id
+    LEFT JOIN users u ON p.received_by = u.id
+    LEFT JOIN enrollments e ON s.id = e.student_id
+    LEFT JOIN sections sec ON e.section_id = sec.id
+    LEFT JOIN classes c ON sec.class_id = c.id
+    WHERE 1=1
+  `;
+  const params: (string | number)[] = [];
+
+  if (q) {
+    sql += ` AND (s.full_name LIKE ? OR s.admission_no LIKE ? OR p.receipt_no LIKE ?)`;
+    params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+  }
+  if (method) {
+    sql += ` AND p.method = ?`;
+    params.push(method);
+  }
+  if (dateFrom) {
+    sql += ` AND p.paid_on >= ?`;
+    params.push(dateFrom);
+  }
+  if (dateTo) {
+    sql += ` AND p.paid_on <= ?`;
+    params.push(dateTo);
+  }
+
+  sql += ` ORDER BY p.id DESC LIMIT 100`;
+
+  const payments = await query(sql, params);
+  return json({ items: payments });
 });

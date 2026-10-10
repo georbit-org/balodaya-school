@@ -274,6 +274,29 @@ async function run() {
   });
   assert(deleteSlide.status === 200, 'Admin successfully deleted test hero slide via DELETE');
 
+  // 4.10 TESTING SHELL COUNTS, SEARCH PALETTE, & UI KIT
+  console.log('\n--- 4.10 Testing Shell Counts, Search Palette & UI Kit ---');
+  const shellUnauth = await request('/api/shell/counts');
+  assert(shellUnauth.status === 401, 'Unauthenticated GET /api/shell/counts returns HTTP 401');
+
+  const shellAdmin = await request('/api/shell/counts', { headers: { cookie: cookies.admin } });
+  assert(shellAdmin.status === 200, 'Admin GET /api/shell/counts returns HTTP 200');
+
+  const searchUnauth = await request('/api/search?q=aarav');
+  assert(searchUnauth.status === 401, 'Unauthenticated GET /api/search returns HTTP 401');
+
+  const searchAdmin = await request('/api/search?q=aarav', { headers: { cookie: cookies.admin } });
+  assert(searchAdmin.status === 200, 'Admin GET /api/search returns HTTP 200');
+
+  const uiKit = await request('/app/kit', { headers: { cookie: cookies.admin } });
+  assert(uiKit.status === 200, 'Admin GET /app/kit returns HTTP 200');
+
+  const paymentsPage = await request('/app/payments', { headers: { cookie: cookies.admin } });
+  assert(paymentsPage.status === 200, 'Admin GET /app/payments returns HTTP 200');
+
+  const paymentsApi = await request('/api/fees/payments', { headers: { cookie: cookies.admin } });
+  assert(paymentsApi.status === 200, 'Admin GET /api/fees/payments returns HTTP 200');
+
   // 5. CSV REPORTS WITH UTF-8 BOM
   console.log('\n--- 5. Testing CSV Reports & UTF-8 BOM ---');
   const reports = [

@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--sp-4);
-  z-index: 900;
+  z-index: var(--z-modal);
   animation: fadeIn 0.15s var(--ease);
 }
 
@@ -14,8 +14,8 @@
   width: 100%;
   background-color: var(--surface);
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-2);
+  border-radius: 10px;
+  box-shadow: var(--shadow-3);
   outline: none;
   animation: scaleIn 0.15s var(--ease);
   max-height: 90vh;

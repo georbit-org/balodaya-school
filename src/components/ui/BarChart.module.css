@@ -1,0 +1,52 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: 100%;
+}
+
+.chartSvg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.bar {
+  fill: var(--sky-accent);
+  transition: fill var(--t-fast) var(--ease), opacity var(--t-fast) var(--ease);
+  cursor: pointer;
+}
+
+.bar:hover,
+.bar:focus {
+  fill: var(--sky-deep);
+  opacity: 0.9;
+  outline: none;
+}
+
+.axisText {
+  font-family: var(--font-body);
+  font-size: 11px;
+  fill: var(--ink-faint);
+  text-anchor: middle;
+}
+
+.valueText {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--ink);
+  text-anchor: middle;
+}
+
+.srTable {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

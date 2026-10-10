@@ -14,6 +14,10 @@
   min-width: 240px;
 }
 
+.crumbs {
+  margin-bottom: var(--sp-2);
+}
+
 .title {
   margin: 0 0 var(--sp-2) 0;
   font-family: var(--font-heading);

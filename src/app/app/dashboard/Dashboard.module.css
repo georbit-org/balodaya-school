@@ -2,24 +2,129 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-4);
+  max-width: 1320px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.dateBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  padding: 10px 16px;
+  background: var(--sky-wash);
+  border: 1px solid var(--sky-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+}
+
+.dateGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.dateBadge {
+  font-weight: 700;
+  color: var(--sky-deep);
+  letter-spacing: 0.02em;
 }
 
 .statGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: var(--sp-3);
 }
 
-.warningBanner {
+/* Attention Strip */
+.attentionSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.attentionTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+}
+
+.attentionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--sp-2);
+}
+
+.attentionCard {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--sp-3) var(--sp-4);
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: var(--radius-md);
-  color: #991b1b;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform var(--dur-fast), border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+.attentionCard:hover {
+  transform: translateY(-1px);
+  border-color: var(--sky-accent);
+  box-shadow: var(--shadow-1);
+}
+
+.attentionCard.warning {
+  border-left-color: #f59e0b;
+}
+
+.attentionCard.danger {
+  border-left-color: var(--danger);
+}
+
+.attentionCard.info {
+  border-left-color: var(--sky-accent);
+}
+
+.attentionContent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: var(--text-sm);
+}
+
+.attentionCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+/* Charts Grid */
+.chartsGrid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: var(--sp-4);
+}
+
+@media (max-width: 960px) {
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .dashboardGrid {
@@ -38,22 +143,96 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: var(--sp-4);
+  box-shadow: var(--shadow-1);
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
+  overflow: hidden;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
 }
 
 .panelTitle {
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   font-weight: 700;
   color: var(--ink);
   margin: 0;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 8px;
 }
 
+.panelAction {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sky-deep);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.panelAction:hover {
+  text-decoration: underline;
+}
+
+.panelBody {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  flex: 1;
+}
+
+/* House System */
+.houseGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--sp-2);
+}
+
+.houseCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.houseCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--house-color, var(--accent));
+}
+
+.houseName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.housePoints {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lists */
 .itemList {
   list-style: none;
   padding: 0;
@@ -67,10 +246,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--sp-2) var(--sp-3);
+  padding: 10px 14px;
   background: var(--paper);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  transition: border-color var(--dur-fast);
+}
+
+.itemRow:hover {
+  border-color: var(--sky-border);
 }
 
 .itemTitle {
@@ -82,13 +266,65 @@
 .itemMeta {
   font-size: var(--text-xs);
   color: var(--ink-soft);
+  margin-top: 2px;
+}
+
+.emptyState {
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  text-align: center;
+  padding: 24px var(--sp-3);
+}
+
+/* Teacher / Student Timetable */
+.timetableGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--sp-2);
+}
+
+.timetableCard {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.periodBadge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sky-deep);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.subjectName {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.timeText {
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+/* Parent Portal Child Cards */
+.childGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--sp-4);
 }
 
 .childCard {
-  background: var(--paper);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: var(--sp-4);
+  box-shadow: var(--shadow-1);
+  padding: 18px;
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
@@ -97,46 +333,25 @@
 .childHeader {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: var(--sp-2);
+  align-items: flex-start;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+
+.childName {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 2px 0;
+}
+
+.childMeta {
+  font-size: 12px;
+  color: var(--ink-soft);
 }
 
 .childStats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--sp-3);
-}
-
-.timetableGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: var(--sp-2);
-}
-
-.timetableCard {
-  background: var(--paper);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: var(--sp-2);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.periodBadge {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.subjectName {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.timeText {
-  font-size: 11px;
-  color: var(--ink-soft);
 }

@@ -53,7 +53,7 @@ export function Field(props: FieldProps) {
           className={`${styles.control} ${styles.select} ${error ? styles.hasError : ''}`}
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy}
-          {...(rest as any)}
+          {...(rest as React.SelectHTMLAttributes<HTMLSelectElement>)}
         >
           {(props as SelectFieldProps).options
             ? (props as SelectFieldProps).options?.map((opt) => (
@@ -69,7 +69,7 @@ export function Field(props: FieldProps) {
           className={`${styles.control} ${styles.textarea} ${error ? styles.hasError : ''}`}
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy}
-          {...(rest as any)}
+          {...(rest as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
         />
       ) : (
         <input
@@ -77,7 +77,7 @@ export function Field(props: FieldProps) {
           className={`${styles.control} ${error ? styles.hasError : ''}`}
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy}
-          {...(rest as any)}
+          {...(rest as React.InputHTMLAttributes<HTMLInputElement>)}
         />
       )}
 

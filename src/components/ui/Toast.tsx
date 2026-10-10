@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useId } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import styles from './Toast.module.css';
 
 interface ToastItem {

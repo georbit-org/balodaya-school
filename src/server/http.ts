@@ -16,7 +16,27 @@ export function json(data: unknown, status = 200): NextResponse {
   return NextResponse.json(data, { status });
 }
 
-export function handle<T = any>(
+export function jsonOk(data: unknown = { ok: true }, status = 200): NextResponse {
+  return NextResponse.json(data, { status });
+}
+
+export function jsonUnauthorized(message = 'Authentication required'): NextResponse {
+  return NextResponse.json({ error: message }, { status: 401 });
+}
+
+export function jsonForbidden(message = 'Permission denied'): NextResponse {
+  return NextResponse.json({ error: message }, { status: 403 });
+}
+
+export function jsonBadRequest(message = 'Bad Request', fields?: Record<string, string>): NextResponse {
+  return NextResponse.json({ error: message, ...(fields ? { fields } : {}) }, { status: 400 });
+}
+
+export function jsonNotFound(message = 'Record not found'): NextResponse {
+  return NextResponse.json({ error: message }, { status: 404 });
+}
+
+export function handle<T = unknown>(
   fn: (req: Request, context: T) => Promise<Response>
 ): (req: Request, context: T) => Promise<Response> {
   return async (req: Request, context: T) => {

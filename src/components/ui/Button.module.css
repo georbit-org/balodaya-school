@@ -80,6 +80,12 @@
   background-color: var(--surface-2);
 }
 
+.iconSlot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .loadingWrapper {
   display: inline-flex;
   align-items: center;

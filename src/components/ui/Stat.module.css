@@ -7,7 +7,8 @@
   flex-direction: column;
   gap: var(--sp-1);
   box-shadow: var(--shadow-1);
-  transition: border-color 0.15s var(--ease);
+  position: relative;
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 
 .linkWrapper {
@@ -16,26 +17,83 @@
 }
 
 .linkWrapper:hover .card {
-  border-color: var(--accent);
+  border-color: var(--sky-accent);
+  box-shadow: var(--shadow-2);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
 }
 
 .label {
   font-family: var(--font-body);
-  font-size: var(--text-sm);
-  color: var(--ink-soft);
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+}
+
+.arrowIcon {
+  color: var(--ink-faint);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all var(--t-fast) var(--ease);
+}
+
+.linkWrapper:hover .arrowIcon {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--accent);
+}
+
+.valueRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-top: 2px;
 }
 
 .value {
   font-family: var(--font-heading);
-  font-size: var(--text-2xl);
+  font-size: 1.85rem;
   font-weight: 600;
   color: var(--ink);
-  line-height: 1.1;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-top: 2px;
 }
 
 .subtext {
   font-family: var(--font-body);
   font-size: var(--text-sm);
-  color: var(--ink-faint);
+  color: var(--ink-soft);
+}
+
+.trendBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.trendUp {
+  color: var(--success);
+}
+
+.trendDown {
+  color: var(--danger);
 }

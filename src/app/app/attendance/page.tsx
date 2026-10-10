@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { DataTable, Column } from '@/components/ui/DataTable';
+import { KeyHint } from '@/components/ui/KeyHint';
+import { adToBs } from '@/lib/bs-date';
 import styles from './Attendance.module.css';
 
 interface RosterStudent {
@@ -313,9 +315,12 @@ export default function AttendancePage() {
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
               />
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--sky-deep)', background: 'var(--sky-wash)', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--sky-border)' }}>
+                {adToBs(selectedDate).displayEn} ({adToBs(selectedDate).displayNe})
+              </span>
             </div>
 
-            <div style={{ marginLeft: 'auto', display: 'flex', gap: 'var(--space-2)' }}>
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 'var(--sp-2)' }}>
               <Button variant="secondary" size="sm" onClick={handleMarkAllPresent}>
                 Mark All Present
               </Button>
