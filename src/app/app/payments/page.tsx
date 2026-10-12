@@ -13,6 +13,7 @@ import { Field } from '@/components/ui/Field';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatNpr } from '@/lib/format';
 import { adToBs } from '@/lib/bs-date';
+import { Can } from '@/components/auth/SessionProvider';
 import styles from './Payments.module.css';
 
 interface PaymentItem {
@@ -119,13 +120,15 @@ export default function PaymentsPage() {
                 Export CSV
               </Button>
             </Link>
-            <Button
-              variant="primary"
-              iconLeft={<Icon name="plus" size={16} />}
-              onClick={() => setRecordDialogOpen(true)}
-            >
-              Record Payment
-            </Button>
+            <Can action="fee.record">
+              <Button
+                variant="primary"
+                iconLeft={<Icon name="plus" size={16} />}
+                onClick={() => setRecordDialogOpen(true)}
+              >
+                Record Payment
+              </Button>
+            </Can>
           </div>
         }
       />

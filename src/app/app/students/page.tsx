@@ -2,11 +2,15 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Field } from '@/components/ui/Field';
+import { Badge } from '@/components/ui/Badge';
+import { Icon } from '@/components/ui/Icon';
+import { useSession, Can } from '@/components/auth/SessionProvider';
 import styles from './StudentsList.module.css';
 
 interface StudentItem {
@@ -35,6 +39,9 @@ interface HouseOption {
 }
 
 export default function StudentsDirectoryPage() {
+  const { user } = useSession();
+  const router = useRouter();
+
   const [students, setStudents] = useState<StudentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -63,6 +70,13 @@ export default function StudentsDirectoryPage() {
     guardian_email: '',
   });
 
+  // If student accesses this page, redirect to their own profile
+  useEffect(() => {
+    if (user.role === 'student') {
+      router.replace('/app/students/me');
+    }
+  }, [user.role, router]);
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -85,8 +99,10 @@ export default function StudentsDirectoryPage() {
   }, [search, statusFilter, sectionFilter, page]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (user.role !== 'student') {
+      loadData();
+    }
+  }, [loadData, user.role]);
 
   useEffect(() => {
     // Load metadata options
@@ -109,14 +125,15 @@ export default function StudentsDirectoryPage() {
       })
       .catch(() => {});
 
-    // Houses can be queried or statically populated
-    setHouses([
-      { id: 1, name: 'Red House (Laligurans)' },
-      { id: 2, name: 'Yellow House (Kanchan)' },
-      { id: 3, name: 'Blue House (Danphe)' },
-      { id: 4, name: 'Green House (Himalaya)' },
-      { id: 5, name: 'Orange House (Machhapuchhre)' },
-    ]);
+    // Fetch houses dynamically from API
+    fetch('/api/houses')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.houses) {
+          setHouses(d.houses);
+        }
+      })
+      .catch(() => {});
   }, [formData.section_id]);
 
   const handleAddSubmit = async (e: React.FormEvent) => {
@@ -155,40 +172,136 @@ export default function StudentsDirectoryPage() {
       });
       loadData();
     } catch {
-      setFormError('Network error while saving student.');
+      setFormError('Network error. Failed to add student.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const renderStatus = (st: StudentItem['status']) => {
-    switch (st) {
-      case 'active':
-        return <span className={styles.statusActive}>Active</span>;
-      case 'transferred':
-        return <span className={styles.statusTransferred}>Transferred</span>;
-      case 'graduated':
-        return <span className={styles.statusGraduated}>Graduated</span>;
-      case 'inactive':
-        return <span className={styles.statusInactive}>Inactive</span>;
-      default:
-        return <span>{st}</span>;
-    }
+  const renderStatus = (st: string) => {
+    if (st === 'active') return <Badge variant="success">Active</Badge>;
+    if (st === 'graduated') return <Badge variant="info">Graduated</Badge>;
+    if (st === 'transferred') return <Badge variant="warning">Transferred</Badge>;
+    return <Badge variant="neutral">Inactive</Badge>;
   };
 
+  // PARENT VIEW: My Children Cards
+  if (user.role === 'parent') {
+    return (
+      <div>
+        <PageHeader
+          title="My Children"
+          description="Official enrollment records and academic credentials for your registered students at Balodaya."
+        />
+
+        {loading ? (
+          <div style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--ink-muted)' }}>
+            Loading children profiles...
+          </div>
+        ) : students.length === 0 ? (
+          <div style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--ink-muted)' }}>
+            No registered children found under this parent account.
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-6)', marginTop: 'var(--space-6)' }}>
+            {students.map((child) => (
+              <div
+                key={child.id}
+                style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: 'var(--space-6)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'var(--space-4)',
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                  <div
+                    style={{
+                      width: 52,
+                      height: 52,
+                      borderRadius: '50%',
+                      background: 'var(--accent-subtle, #e0f2fe)',
+                      color: 'var(--accent, #0284c7)',
+                      fontSize: 22,
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {child.full_name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--ink)' }}>
+                      {child.full_name}
+                    </h3>
+                    <div style={{ fontSize: 'var(--text-sm)', color: 'var(--accent, #0284c7)', fontWeight: 500 }}>
+                      {child.class_name ? `${child.class_name} • Section ${child.section_name || 'A'}` : 'Unassigned'}
+                      {child.roll_no ? ` • Roll ${child.roll_no}` : ''}
+                    </div>
+                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-muted)' }}>
+                      Admission ID: {child.admission_no}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: 'var(--space-3)', fontSize: 'var(--text-sm)' }}>
+                  <span style={{ color: 'var(--ink-muted)' }}>Status</span>
+                  {renderStatus(child.status)}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
+                  <span style={{ color: 'var(--ink-muted)' }}>House</span>
+                  <strong>{child.house_name || 'Unassigned'}</strong>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+                  <Link href={`/app/students/${child.id}`}>
+                    <Button variant="secondary" size="sm" style={{ width: '100%' }}>
+                      Full Profile
+                    </Button>
+                  </Link>
+                  <Link href="/app/exams">
+                    <Button variant="secondary" size="sm" style={{ width: '100%' }}>
+                      Exam Marks
+                    </Button>
+                  </Link>
+                  <Link href="/app/attendance">
+                    <Button variant="secondary" size="sm" style={{ width: '100%' }}>
+                      Attendance
+                    </Button>
+                  </Link>
+                  <Link href="/app/fees">
+                    <Button variant="primary" size="sm" style={{ width: '100%' }}>
+                      Fees & Bills
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // STAFF VIEW: Table
   const columns: Column<StudentItem>[] = [
     {
       key: 'admission_no',
-      header: 'Admission No',
+      header: 'Adm No',
       render: (item: StudentItem) => (
-        <Link href={`/app/students/${item.id}`} className={styles.studentLink}>
+        <span style={{ fontFamily: 'var(--font-mono, monospace)', fontWeight: 600 }}>
           {item.admission_no}
-        </Link>
+        </span>
       ),
     },
     {
       key: 'full_name',
-      header: 'Student Name',
+      header: 'Full Name',
       render: (item: StudentItem) => (
         <div>
           <strong style={{ color: 'var(--ink)' }}>{item.full_name}</strong>
@@ -201,38 +314,34 @@ export default function StudentsDirectoryPage() {
       ),
     },
     {
-      key: 'class',
-      header: 'Class & Section',
+      key: 'class_section',
+      header: 'Class / Sec',
       render: (item: StudentItem) => (
-        item.class_name ? (
-          <span>
-            {item.class_name} {item.section_name ? `(${item.section_name})` : ''}
-          </span>
-        ) : (
-          <span style={{ color: 'var(--ink-muted)' }}>Not assigned</span>
-        )
+        <div>
+          {item.class_name ? `${item.class_name} (${item.section_name})` : '—'}
+          {item.roll_no ? (
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-muted)', display: 'block' }}>
+              Roll: {item.roll_no}
+            </span>
+          ) : null}
+        </div>
       ),
-    },
-    {
-      key: 'roll_no',
-      header: 'Roll No',
-      render: (item: StudentItem) => item.roll_no ?? '—',
     },
     {
       key: 'house_name',
       header: 'House',
-      render: (item: StudentItem) => item.house_name ?? '—',
+      render: (item: StudentItem) => item.house_name || '—',
     },
     {
       key: 'guardian',
-      header: 'Primary Guardian',
+      header: 'Guardian Info',
       render: (item: StudentItem) => (
         <div>
           <div>{item.guardian_name || '—'}</div>
           {item.guardian_phone && (
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-muted)' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-muted)' }}>
               {item.guardian_phone}
-            </div>
+            </span>
           )}
         </div>
       ),
@@ -262,12 +371,16 @@ export default function StudentsDirectoryPage() {
         description="Official student roll, section assignments, academic records, and profiles."
         actions={
           <div className={styles.actions}>
-            <a href="/api/students/export" download>
-              <Button variant="secondary">Export CSV</Button>
-            </a>
-            <Button variant="primary" onClick={() => setIsAddOpen(true)}>
-              + Add Student
-            </Button>
+            <Can action="student.view_all">
+              <a href="/api/students/export" download>
+                <Button variant="secondary">Export CSV</Button>
+              </a>
+            </Can>
+            <Can action="student.create">
+              <Button variant="primary" onClick={() => setIsAddOpen(true)}>
+                + Add Student
+              </Button>
+            </Can>
           </div>
         }
       />
@@ -354,112 +467,120 @@ export default function StudentsDirectoryPage() {
         onClose={() => setIsAddOpen(false)}
         title="Add New Student"
       >
-        <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-          {formError && (
-            <div style={{ padding: 'var(--space-2)', background: '#fce8e6', color: '#c5221f', borderRadius: '4px', fontSize: 'var(--text-sm)' }}>
-              {formError}
-            </div>
-          )}
+        <form onSubmit={handleAddSubmit} className={styles.addForm}>
+          {formError && <div className={styles.errorAlert}>{formError}</div>}
 
-          <div className={styles.formGrid}>
-            <Field
-              label="Full Name *"
-              value={formData.full_name}
-              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+          <Field label="Full Name" required>
+            <input
+              type="text"
               required
               placeholder="e.g. Aarav Sharma"
+              value={formData.full_name}
+              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
             />
-            <Field
-              label="Gender"
-              as="select"
-              value={formData.gender}
-              onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-            >
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
+          </Field>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+            <Field label="Gender" required>
+              <select
+                value={formData.gender}
+                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+              >
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </Field>
+
+            <Field label="Date of Birth">
+              <input
+                type="date"
+                value={formData.dob}
+                onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+              />
             </Field>
           </div>
 
-          <div className={styles.formGrid}>
-            <Field
-              label="Date of Birth"
-              type="date"
-              value={formData.dob}
-              onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-            />
-            <Field
-              label="Class & Section *"
-              as="select"
-              value={formData.section_id}
-              onChange={(e) => setFormData({ ...formData, section_id: e.target.value })}
-              required
-            >
-              {sections.map((s) => (
-                <option key={s.sectionId} value={s.sectionId}>
-                  {s.label}
-                </option>
-              ))}
-            </Field>
-          </div>
-
-          <div className={styles.formGrid}>
-            <Field
-              label="House Assignment"
-              as="select"
-              value={formData.house_id}
-              onChange={(e) => setFormData({ ...formData, house_id: e.target.value })}
-            >
-              <option value="">None (Unassigned)</option>
-              {houses.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.name}
-                </option>
-              ))}
-            </Field>
-            <Field
-              label="Residential Address"
+          <Field label="Residential Address">
+            <input
+              type="text"
+              placeholder="e.g. Ward 4, Balodaya Chowk"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              placeholder="e.g. Bayarghari, Syangja"
             />
+          </Field>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+            <Field label="Class & Section" required>
+              <select
+                required
+                value={formData.section_id}
+                onChange={(e) => setFormData({ ...formData, section_id: e.target.value })}
+              >
+                {sections.map((s) => (
+                  <option key={s.sectionId} value={s.sectionId}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="School House">
+              <select
+                value={formData.house_id}
+                onChange={(e) => setFormData({ ...formData, house_id: e.target.value })}
+              >
+                <option value="">No House Assigned</option>
+                {houses.map((h) => (
+                  <option key={h.id} value={h.id}>
+                    {h.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
           </div>
 
-          <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: 'var(--space-2) 0' }} />
+          <h4 style={{ margin: 'var(--space-4) 0 var(--space-2) 0', fontSize: 'var(--text-sm)', color: 'var(--ink)' }}>
+            Primary Guardian Information
+          </h4>
 
-          <strong style={{ fontSize: 'var(--text-sm)', color: 'var(--ink)' }}>Primary Guardian Details</strong>
-
-          <div className={styles.formGrid}>
-            <Field
-              label="Guardian Name *"
+          <Field label="Guardian Name" required>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Ramesh Sharma"
               value={formData.guardian_name}
               onChange={(e) => setFormData({ ...formData, guardian_name: e.target.value })}
-              required
-              placeholder="e.g. Ram Prasad Sharma"
             />
-            <Field
-              label="Guardian Phone *"
-              value={formData.guardian_phone}
-              onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })}
-              required
-              placeholder="e.g. 9846012345"
-            />
+          </Field>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+            <Field label="Guardian Phone" required>
+              <input
+                type="tel"
+                required
+                placeholder="e.g. 9841234567"
+                value={formData.guardian_phone}
+                onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })}
+              />
+            </Field>
+
+            <Field label="Guardian Email">
+              <input
+                type="email"
+                placeholder="optional@gmail.com"
+                value={formData.guardian_email}
+                onChange={(e) => setFormData({ ...formData, guardian_email: e.target.value })}
+              />
+            </Field>
           </div>
 
-          <Field
-            label="Guardian Email (Optional)"
-            type="email"
-            value={formData.guardian_email}
-            onChange={(e) => setFormData({ ...formData, guardian_email: e.target.value })}
-            placeholder="guardian@example.com"
-          />
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
-            <Button variant="secondary" type="button" onClick={() => setIsAddOpen(false)}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-6)' }}>
+            <Button type="button" variant="secondary" onClick={() => setIsAddOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit" disabled={submitting}>
-              {submitting ? 'Registering...' : 'Register Student'}
+            <Button type="submit" variant="primary" loading={submitting}>
+              {submitting ? 'Creating...' : 'Enroll Student'}
             </Button>
           </div>
         </form>

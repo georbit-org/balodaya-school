@@ -3,6 +3,7 @@ import { Newsreader, Hanken_Grotesk, Noto_Serif_Devanagari } from 'next/font/goo
 import './globals.css';
 import { SCHOOL_INFO } from '@/content/school';
 import { ToastProvider } from '@/components/ui/Toast';
+import { getThemeConfig, generateThemeCss } from '@/server/theme';
 
 const newsreader = Newsreader({
   subsets: ['latin'],
@@ -37,11 +38,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const theme = await getThemeConfig();
+  const themeCss = generateThemeCss(theme);
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'EducationalOrganization',
@@ -66,6 +70,7 @@ export default function RootLayout({
       className={`${newsreader.variable} ${hankenGrotesk.variable} ${notoSerifDevanagari.variable}`}
     >
       <head>
+        <style id="theme-vars" dangerouslySetInnerHTML={{ __html: themeCss }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

@@ -26,6 +26,31 @@
   --warning-wash: #FBF1DC;
   --focus:        #0284C7;
 
+  /* Convenience aliases for portal styling */
+  --surface-card:  var(--surface);
+  --surface-hover: var(--sky-tint);
+  --border-subtle: var(--line);
+  --text-primary:  var(--ink);
+  --text-muted:    var(--ink-soft);
+  --text-faint:    var(--ink-faint);
+  --brand-50:      var(--sky-wash);
+  --brand-100:     var(--sky-tint);
+  --brand-200:     var(--sky-border);
+  --brand-500:     var(--accent);
+  --brand-600:     var(--sky-accent);
+  --brand-700:     var(--sky-deep);
+  --space-1: var(--sp-1);
+  --space-2: var(--sp-2);
+  --space-3: var(--sp-3);
+  --space-4: var(--sp-4);
+  --space-5: var(--sp-5);
+  --space-6: var(--sp-6);
+  --space-8: var(--sp-7);
+  --space-12: var(--sp-8);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+
   /* House colours: used ONLY for houses */
   --house-red:    #C62F2F;
   --house-yellow: #E0A800;

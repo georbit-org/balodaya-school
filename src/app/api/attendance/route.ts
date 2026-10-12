@@ -1,6 +1,9 @@
 import { requireUser } from '@/server/guard';
 import { query, one, run } from '@/server/db';
 import { handle, json, HttpError } from '@/server/http';
+import { todayNPT, addDays } from '@/lib/calendar';
+import { assertWorkingDay, getCalendarContext } from '@/server/services/calendar';
+import { getSetting } from '@/server/settings';
 
 export const GET = handle(async (req: Request) => {
   const user = await requireUser();
@@ -35,7 +38,7 @@ export const GET = handle(async (req: Request) => {
     }
 
     const currentYear = await one<{ id: number }>('SELECT id FROM academic_years WHERE is_current = 1');
-    const targetMonth = month || new Date().toISOString().slice(0, 7); // YYYY-MM
+    const targetMonth = month || todayNPT().slice(0, 7); // YYYY-MM
 
     const records = await query<{
       date: string;
@@ -74,6 +77,32 @@ export const GET = handle(async (req: Request) => {
     }
   }
 
+  // Check working day status
+  const calendarCtx = await getCalendarContext(currentYear.id, 'students');
+  const dow = new Date(date).getUTCDay();
+  const isWeeklyOff = calendarCtx.weeklyOff.includes(dow);
+  const isHoliday = calendarCtx.holidays.has(date);
+  const holiday = calendarCtx.holidayDetails.get(date);
+
+  let isWorkingDay = true;
+  let closedReason = '';
+  if (isWeeklyOff) {
+    isWorkingDay = false;
+    closedReason = 'Weekly Off Day';
+  } else if (isHoliday) {
+    isWorkingDay = false;
+    closedReason = holiday?.title || 'Official Holiday';
+  }
+
+  // Find students on approved leave for this date
+  const approvedLeaves = await query<{ student_id: number; reason: string }>(
+    `SELECT student_id, reason
+     FROM leave_requests
+     WHERE status = 'approved' AND ? >= from_date AND ? <= to_date`,
+    [date, date]
+  );
+  const leaveMap = new Map(approvedLeaves.map((l) => [l.student_id, l.reason]));
+
   const rows = await query<{
     enrollment_id: number;
     student_id: number;
@@ -94,10 +123,22 @@ export const GET = handle(async (req: Request) => {
     [date, sectionId, currentYear.id]
   );
 
+  const roster = rows.map((r) => {
+    const hasApprovedLeave = leaveMap.has(r.student_id);
+    return {
+      ...r,
+      hasApprovedLeave,
+      status: r.status ? r.status : hasApprovedLeave ? ('leave' as const) : null,
+      note: r.note || (hasApprovedLeave ? `Approved Leave: ${leaveMap.get(r.student_id)}` : null),
+    };
+  });
+
   return json({
     sectionId: parseInt(sectionId, 10),
     date,
-    roster: rows,
+    isWorkingDay,
+    closedReason,
+    roster,
   });
 });
 
@@ -108,19 +149,38 @@ export const POST = handle(async (req: Request) => {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { section_id, date, entries } = body;
+  const { section_id, date, entries, records, edit_reason } = body;
+  const rawEntries = Array.isArray(entries) ? entries : Array.isArray(records) ? records : [];
 
-  if (!section_id || !date || !Array.isArray(entries) || entries.length === 0) {
+  if (!section_id || !date || rawEntries.length === 0) {
     throw new HttpError(400, 'section_id, date, and entries array are required.');
   }
 
-  // Prevent future dates
-  const today = new Date().toISOString().slice(0, 10);
+  const currentYear = await one<{ id: number }>('SELECT id FROM academic_years WHERE is_current = 1');
+  if (!currentYear) throw new HttpError(500, 'No active academic year.');
+
+  // 1. Enforce working day check
+  await assertWorkingDay(date, 'students', currentYear.id);
+
+  // 2. Prevent future dates (Nepal Time NPT)
+  const today = todayNPT();
   if (date > today) {
     throw new HttpError(400, 'Attendance cannot be marked for future dates.');
   }
 
-  // Teacher permission check
+  // 3. Edit window check for teachers
+  if (user.role === 'teacher') {
+    const editWindowDays = await getSetting<number>('attendance_edit_window_days');
+    const earliestAllowed = addDays(today, -Number(editWindowDays || 2));
+    if (date < earliestAllowed) {
+      throw new HttpError(
+        403,
+        `Attendance edit window (${editWindowDays} days) has expired for ${date}. Past corrections require Principal/Admin authorization.`
+      );
+    }
+  }
+
+  // Teacher section assignment check
   if (user.role === 'teacher') {
     const isAssigned = await one(
       `SELECT id FROM sections WHERE id = ? AND class_teacher_id = ?
@@ -133,22 +193,56 @@ export const POST = handle(async (req: Request) => {
     }
   }
 
-  // Upsert all entries
-  for (const entry of entries) {
+  // Validate enrollments belong to this section
+  const validEnrollments = await query<{ id: number }>(
+    'SELECT id FROM enrollments WHERE section_id = ? AND academic_year_id = ?',
+    [section_id, currentYear.id]
+  );
+  const validEnrollmentIds = new Set(validEnrollments.map((e) => e.id));
+
+  // Upsert entries and log audit history on status changes
+  for (const entry of rawEntries) {
     const { enrollment_id, status, note = null } = entry;
-    if (!enrollment_id || !['present', 'absent', 'late', 'leave'].includes(status)) {
+    if (!enrollment_id || !validEnrollmentIds.has(enrollment_id)) {
+      continue;
+    }
+    if (!['present', 'absent', 'late', 'leave'].includes(status)) {
       continue;
     }
 
-    await run(
-      `INSERT INTO attendance (enrollment_id, date, status, note, marked_by)
-       VALUES (?, ?, ?, ?, ?)
-       ON CONFLICT(enrollment_id, date) DO UPDATE SET
-         status = excluded.status,
-         note = excluded.note,
-         marked_by = excluded.marked_by`,
-      [enrollment_id, date, status, note, user.id]
+    const existing = await one<{ id: number; status: string; note: string | null }>(
+      'SELECT id, status, note FROM attendance WHERE enrollment_id = ? AND date = ?',
+      [enrollment_id, date]
     );
+
+    if (existing) {
+      if (existing.status !== status || existing.note !== note) {
+        await run(
+          `UPDATE attendance SET status = ?, note = ?, marked_by = ? WHERE id = ?`,
+          [status, note, user.id, existing.id]
+        );
+        // Log to attendance_history
+        await run(
+          `INSERT INTO attendance_history (attendance_id, old_status, new_status, old_note, new_note, changed_by, reason)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [
+            existing.id,
+            existing.status,
+            status,
+            existing.note,
+            note,
+            user.id,
+            edit_reason || 'Roster updated',
+          ]
+        );
+      }
+    } else {
+      await run(
+        `INSERT INTO attendance (enrollment_id, date, status, note, marked_by)
+         VALUES (?, ?, ?, ?, ?)`,
+        [enrollment_id, date, status, note, user.id]
+      );
+    }
   }
 
   return json({ success: true, count: entries.length });

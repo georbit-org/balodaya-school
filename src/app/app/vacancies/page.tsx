@@ -50,8 +50,8 @@ export default function VacanciesManagementPage() {
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true);
     try {
       if (activeTab === 'vacancies') {
         const res = await fetch('/api/vacancies');
@@ -72,7 +72,7 @@ export default function VacanciesManagementPage() {
   }, [activeTab]);
 
   useEffect(() => {
-    loadData();
+    loadData(false);
   }, [loadData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -244,6 +244,7 @@ export default function VacanciesManagementPage() {
           <select
             value={a.status}
             onChange={(e) => handleUpdateAppStatus(a.id, e.target.value)}
+            className={cls}
             style={{
               padding: '2px 8px',
               borderRadius: '4px',

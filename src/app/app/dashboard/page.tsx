@@ -18,6 +18,7 @@ import styles from './Dashboard.module.css';
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeChildId, setActiveChildId] = useState<number | null>(null);
 
   useEffect(() => {
     fetch('/api/dashboard')
@@ -44,19 +45,29 @@ export default function DashboardPage() {
     year: 'numeric',
   });
 
-  const renderDateBar = () => (
-    <div className={styles.dateBar}>
-      <div className={styles.dateGroup}>
-        <Icon name="calendar" width={15} height={15} color="var(--sky-deep)" />
-        <span className={styles.dateBadge}>
-          {todayBs.displayEn} ({todayBs.displayNe})
+  const renderDateBar = () => {
+    const displayEn = data.today_date_display?.bsEn || todayBs.displayEn;
+    const displayNe = data.today_date_display?.bsNe || todayBs.displayNe;
+    const displayAd = data.today_date_display?.adStr || todayAdStr;
+    const schoolName = data.school_identity?.name || 'Balodaya Secondary School';
+    const schoolAddress = data.school_identity?.address || 'Bheerkot-06, Syangja';
+
+    return (
+      <div className={styles.dateBar}>
+        <div className={styles.dateGroup}>
+          <Icon name="calendar" width={15} height={15} color="var(--sky-deep)" />
+          <span className={styles.dateBadge}>
+            {displayEn} ({displayNe})
+          </span>
+          <span>&bull;</span>
+          <span>{displayAd}</span>
+        </div>
+        <span>
+          {schoolName} &bull; {schoolAddress}
         </span>
-        <span>&bull;</span>
-        <span>{todayAdStr}</span>
       </div>
-      <span>Balodaya Secondary School &bull; Bheerkot-06, Syangja</span>
-    </div>
-  );
+    );
+  };
 
   // ================= ADMIN & PRINCIPAL VIEW =================
   if (role === 'admin' || role === 'principal') {
@@ -108,13 +119,13 @@ export default function DashboardPage() {
             href="/app/students"
           />
           <Stat
-            label="New Applications"
-            value={Number(stats.new_applications || 0)}
-            subtext="Online admissions awaiting verification"
-            href="/app/applications"
+            label="Staff Present"
+            value={Number(stats.staff_present_today || 0)}
+            subtext={`${stats.staff_on_leave_today || 0} on approved leave`}
+            href="/app/staff/attendance"
           />
           <Stat
-            label="Absent Today"
+            label="Absent Students"
             value={Number(stats.absent_today || 0)}
             subtext="Students marked absent on roll"
             href="/app/attendance"
@@ -205,6 +216,70 @@ export default function DashboardPage() {
 
         {/* Operations Panels: Upcoming Exams & Live Audit Timeline */}
         <div className={styles.dashboardGrid}>
+          {/* Sections with Attendance Pending Today */}
+          {data.sections_attendance_pending && data.sections_attendance_pending.length > 0 && (
+            <div className={styles.panel}>
+              <div className={styles.panelHeader}>
+                <h2 className={styles.panelTitle}>
+                  <Icon name="attendance" width={16} height={16} color="var(--warning)" />
+                  Sections Attendance Pending Today ({data.sections_attendance_pending.length})
+                </h2>
+                <Link href="/app/attendance" className={styles.panelAction}>
+                  Mark Roll <Icon name="chevron-right" width={12} height={12} />
+                </Link>
+              </div>
+              <div className={styles.panelBody}>
+                <ul className={styles.itemList}>
+                  {data.sections_attendance_pending.slice(0, 5).map((sec) => (
+                    <li key={sec.id} className={styles.itemRow}>
+                      <div>
+                        <div className={styles.itemTitle}>{sec.class_name} ({sec.section_name})</div>
+                        <div className={styles.itemMeta}>
+                          Class Teacher: {sec.teacher_name || 'Unassigned'}
+                        </div>
+                      </div>
+                      <Link href={`/app/attendance?sectionId=${sec.id}`}>
+                        <Button variant="secondary" size="sm">
+                          Mark Attendance
+                        </Button>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* Staff on Leave Today */}
+          {data.staff_on_leave_today_list && data.staff_on_leave_today_list.length > 0 && (
+            <div className={styles.panel}>
+              <div className={styles.panelHeader}>
+                <h2 className={styles.panelTitle}>
+                  <Icon name="clock" width={16} height={16} color="var(--sky-accent)" />
+                  Staff on Approved Leave Today ({data.staff_on_leave_today_list.length})
+                </h2>
+                <Link href="/app/staff/attendance" className={styles.panelAction}>
+                  Staff Roster <Icon name="chevron-right" width={12} height={12} />
+                </Link>
+              </div>
+              <div className={styles.panelBody}>
+                <ul className={styles.itemList}>
+                  {data.staff_on_leave_today_list.map((st, idx) => (
+                    <li key={idx} className={styles.itemRow}>
+                      <div>
+                        <div className={styles.itemTitle}>{st.name} ({st.role.toUpperCase()})</div>
+                        <div className={styles.itemMeta}>
+                          {st.leave_type || 'Leave'}: {st.reason}
+                        </div>
+                      </div>
+                      <Badge variant="info">On Leave</Badge>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
           {/* Upcoming Examinations */}
           <div className={styles.panel}>
             <div className={styles.panelHeader}>
@@ -543,6 +618,11 @@ export default function DashboardPage() {
 
   // ================= PARENT VIEW =================
   if (role === 'parent') {
+    const childrenList = data.children || [];
+    const displayedChildren = activeChildId
+      ? childrenList.filter((c) => (c.student_id || c.id) === activeChildId)
+      : childrenList;
+
     return (
       <div className={styles.container}>
         <PageHeader
@@ -552,9 +632,58 @@ export default function DashboardPage() {
 
         {renderDateBar()}
 
+        {childrenList.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink-soft)' }}>Your Children:</span>
+              <div className={styles.chipBar}>
+                <button
+                  type="button"
+                  className={`${styles.chip} ${activeChildId === null ? styles.chipActive : ''}`}
+                  onClick={() => setActiveChildId(null)}
+                >
+                  All Children ({childrenList.length})
+                </button>
+                {childrenList.map((c) => {
+                  const cId = c.student_id || c.id || 0;
+                  return (
+                    <button
+                      type="button"
+                      key={cId}
+                      className={`${styles.chip} ${activeChildId === cId ? styles.chipActive : ''}`}
+                      onClick={() => setActiveChildId(cId)}
+                    >
+                      <Icon name="user" size={13} style={{ marginRight: '6px' }} />
+                      {c.full_name} ({c.class_name}-{c.section_name})
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className={styles.quickActions}>
+              <Link href="/app/leave">
+                <Button variant="secondary" size="sm" iconLeft={<Icon name="leave" size={14} />}>
+                  Apply Leave for Child
+                </Button>
+              </Link>
+              <Link href="/app/fees">
+                <Button variant="secondary" size="sm" iconLeft={<Icon name="credit-card" size={14} />}>
+                  View Fee Dues &amp; Receipts
+                </Button>
+              </Link>
+              <Link href="/app/attendance">
+                <Button variant="secondary" size="sm" iconLeft={<Icon name="calendar" size={14} />}>
+                  Attendance Calendar
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+
         <div className={styles.childGrid}>
-          {data.children && data.children.length > 0 ? (
-            data.children.map((child: any) => (
+          {displayedChildren.length > 0 ? (
+            displayedChildren.map((child) => (
               <div key={child.id || child.student_id} className={styles.childCard}>
                 <div className={styles.childHeader}>
                   <div>
@@ -620,7 +749,7 @@ export default function DashboardPage() {
 
   // ================= STUDENT VIEW =================
   if (role === 'student') {
-    const student = (data as any).student;
+    const student = data.student as { full_name?: string; class_name?: string; section_name?: string; admission_no?: string } | undefined;
     return (
       <div className={styles.container}>
         <PageHeader
@@ -630,47 +759,138 @@ export default function DashboardPage() {
 
         {renderDateBar()}
 
+        <div className={styles.quickActions}>
+          <Link href="/app/leave">
+            <Button variant="secondary" size="sm" iconLeft={<Icon name="leave" size={14} />}>
+              Apply for Leave
+            </Button>
+          </Link>
+          <Link href="/app/timetable">
+            <Button variant="secondary" size="sm" iconLeft={<Icon name="clock" size={14} />}>
+              My Weekly Schedule
+            </Button>
+          </Link>
+          <Link href="/app/attendance">
+            <Button variant="secondary" size="sm" iconLeft={<Icon name="calendar" size={14} />}>
+              Attendance History
+            </Button>
+          </Link>
+        </div>
+
         <div className={styles.statGrid}>
           <Stat
             label="My Attendance"
-            value={(data as any).attendance_percent !== null ? `${(data as any).attendance_percent}%` : '—'}
+            value={data.attendance_percent !== null && data.attendance_percent !== undefined ? `${data.attendance_percent}%` : '—'}
             subtext="Attendance recorded this month"
+            href="/app/attendance"
           />
           <Stat
             label="Fee Dues"
-            value={formatNpr((data as any).fees_due || 0)}
-            subtext="Current outstanding balance"
+            value={formatNpr(data.fees_due || 0)}
+            subtext={(data.fees_due || 0) > 0 ? "Current outstanding balance" : "All fees cleared"}
+            href="/app/fees"
           />
         </div>
 
-        <div className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <h2 className={styles.panelTitle}>
-              <Icon name="calendar" width={16} height={16} color="var(--sky-accent)" />
-              Today&apos;s Class Timetable
-            </h2>
+        <div className={styles.dashboardGrid}>
+          <div className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>
+                <Icon name="calendar" width={16} height={16} color="var(--sky-accent)" />
+                Today&apos;s Class Timetable
+              </h2>
+              <Link href="/app/timetable" className={styles.panelAction}>
+                Weekly Schedule <Icon name="chevron-right" width={12} height={12} />
+              </Link>
+            </div>
+            <div className={styles.panelBody}>
+              {data.timetable_today && data.timetable_today.length > 0 ? (
+                <div className={styles.timetableGrid}>
+                  {data.timetable_today.map((slot, idx) => (
+                    <div key={idx} className={styles.timetableCard}>
+                      <span className={styles.periodBadge}>Period {slot.period}</span>
+                      <span className={styles.subjectName}>{slot.subject_name}</span>
+                      <span className={styles.timeText}>{slot.teacher_name || 'Teacher'}</span>
+                      {slot.start_time && (
+                        <span className={styles.timeText}>
+                          {slot.start_time} - {slot.end_time}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.emptyState}>No classes scheduled for today.</div>
+              )}
+            </div>
           </div>
-          <div className={styles.panelBody}>
-            {(data as any).timetable_today && (data as any).timetable_today.length > 0 ? (
-              <div className={styles.timetableGrid}>
-                {(data as any).timetable_today.map((slot: any, idx: number) => (
-                  <div key={idx} className={styles.timetableCard}>
-                    <span className={styles.periodBadge}>Period {slot.period}</span>
-                    <span className={styles.subjectName}>{slot.subject_name}</span>
-                    <span className={styles.timeText}>{slot.teacher_name || 'Teacher'}</span>
-                    {slot.start_time && (
-                      <span className={styles.timeText}>
-                        {slot.start_time} - {slot.end_time}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className={styles.emptyState}>No classes scheduled for today.</div>
-            )}
+
+          <div className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>
+                <Icon name="notices" width={16} height={16} color="var(--sky-accent)" />
+                Latest School Circulars
+              </h2>
+              <Link href="/app/notices" className={styles.panelAction}>
+                All Notices <Icon name="chevron-right" width={12} height={12} />
+              </Link>
+            </div>
+            <div className={styles.panelBody}>
+              <ul className={styles.itemList}>
+                {data.latest_notices && data.latest_notices.length > 0 ? (
+                  data.latest_notices.map((n) => (
+                    <li key={n.id} className={styles.itemRow}>
+                      <div>
+                        <div className={styles.itemTitle}>{n.title}</div>
+                        <div className={styles.itemMeta}>
+                          {n.created_at?.slice(0, 10)} &bull; {n.kind === 'event' ? 'Campus Event' : 'General Notice'}
+                        </div>
+                      </div>
+                      <Link href="/app/notices">
+                        <Button variant="secondary" size="sm">
+                          Read
+                        </Button>
+                      </Link>
+                    </li>
+                  ))
+                ) : (
+                  <li className={styles.emptyState}>No notices currently published.</li>
+                )}
+              </ul>
+            </div>
           </div>
         </div>
+
+        {data.upcoming_exams && data.upcoming_exams.length > 0 && (
+          <div className={styles.panel} style={{ marginTop: 'var(--sp-4)' }}>
+            <div className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>
+                <Icon name="exams" width={16} height={16} color="var(--sky-accent)" />
+                Upcoming Examinations &amp; Portions
+              </h2>
+              <Link href="/app/exams" className={styles.panelAction}>
+                View Exams <Icon name="chevron-right" width={12} height={12} />
+              </Link>
+            </div>
+            <div className={styles.panelBody}>
+              <ul className={styles.itemList}>
+                {data.upcoming_exams.map((ex) => (
+                  <li key={ex.id} className={styles.itemRow}>
+                    <div>
+                      <div className={styles.itemTitle}>{ex.name}</div>
+                      <div className={styles.itemMeta}>
+                        {ex.start_date} to {ex.end_date}
+                      </div>
+                    </div>
+                    <Link href="/app/resources">
+                      <Button variant="secondary" size="sm">Exam Portions</Button>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

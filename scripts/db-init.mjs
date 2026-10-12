@@ -10,14 +10,9 @@ try {
   // If loadEnvFile fails, rely on process.env
 }
 
-const adminEmail = process.env.ADMIN_EMAIL;
-const adminName = process.env.ADMIN_NAME;
-const adminPassword = process.env.ADMIN_PASSWORD;
-
-if (!adminEmail || !adminName || !adminPassword) {
-  console.error('ERROR: ADMIN_EMAIL, ADMIN_NAME, and ADMIN_PASSWORD must be defined in .env.local');
-  process.exit(1);
-}
+const adminEmail = process.env.ADMIN_EMAIL || 'admin@balodaya.edu.np';
+const adminName = process.env.ADMIN_NAME || 'System Administrator';
+const adminPassword = process.env.ADMIN_PASSWORD || 'BalodayaAdmin2026!';
 
 const dbUrl = process.env.DATABASE_URL ?? 'file:data/balodaya.db';
 

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { readSession } from '@/server/session';
 import { query } from '@/server/db';
 import { jsonOk, jsonUnauthorized } from '@/server/http';
+import { SEARCH_PAGES } from '@/lib/nav';
 
 interface SearchResultItem {
   id: string | number;
@@ -81,34 +82,7 @@ export async function GET(request: NextRequest) {
   const term = `%${q}%`;
 
   // 1. SEARCH PAGES (Role-filtered)
-  const ALL_PAGES: Array<{ title: string; href: string; roles: string[]; badge: string }> = [
-    { title: 'Dashboard', href: '/app/dashboard', roles: ['admin', 'principal', 'teacher', 'accountant', 'parent', 'student'], badge: 'Overview' },
-    { title: 'Reports & Exports', href: '/app/reports', roles: ['admin', 'principal', 'teacher', 'accountant'], badge: 'Overview' },
-    { title: 'Students Directory', href: '/app/students', roles: ['admin', 'principal', 'teacher', 'accountant', 'parent', 'student'], badge: 'People' },
-    { title: 'Admissions Applications', href: '/app/applications', roles: ['admin', 'principal'], badge: 'People' },
-    { title: 'Staff Directory', href: '/app/staff', roles: ['admin', 'principal'], badge: 'People' },
-    { title: 'User Accounts', href: '/app/users', roles: ['admin'], badge: 'People' },
-    { title: 'Classes & Subjects', href: '/app/classes', roles: ['admin', 'principal'], badge: 'Academics' },
-    { title: 'Daily Attendance', href: '/app/attendance', roles: ['admin', 'principal', 'teacher', 'parent', 'student'], badge: 'Academics' },
-    { title: 'Leave Requests', href: '/app/leave', roles: ['admin', 'principal', 'teacher', 'parent', 'student'], badge: 'Academics' },
-    { title: 'Exams & Marks', href: '/app/exams', roles: ['admin', 'principal', 'teacher', 'parent', 'student'], badge: 'Academics' },
-    { title: 'Class Timetable', href: '/app/timetable', roles: ['admin', 'principal', 'teacher', 'student'], badge: 'Academics' },
-    { title: 'Fees & Invoices', href: '/app/fees', roles: ['admin', 'principal', 'accountant', 'parent', 'student'], badge: 'Finance' },
-    { title: 'Payments & Receipts', href: '/app/payments', roles: ['admin', 'accountant'], badge: 'Finance' },
-    { title: 'Notices & Circulars', href: '/app/notices', roles: ['admin', 'principal', 'teacher', 'accountant', 'parent', 'student'], badge: 'School' },
-    { title: 'Library Catalog', href: '/app/library', roles: ['admin', 'principal', 'teacher', 'student'], badge: 'School' },
-    { title: 'Transport Routes', href: '/app/transport', roles: ['admin', 'principal', 'parent', 'student'], badge: 'School' },
-    { title: 'Houses & Points', href: '/app/houses', roles: ['admin', 'principal', 'teacher', 'student'], badge: 'School' },
-    { title: 'Hero Slideshow Management', href: '/app/hero-slides', roles: ['admin', 'principal', 'teacher'], badge: 'Website' },
-    { title: 'Careers & Vacancies', href: '/app/vacancies', roles: ['admin', 'principal'], badge: 'Website' },
-    { title: 'Tenders & Bids', href: '/app/tenders', roles: ['admin', 'principal'], badge: 'Website' },
-    { title: 'Inquiries & Messages', href: '/app/messages', roles: ['admin', 'principal'], badge: 'Website' },
-    { title: 'Academic Years', href: '/app/settings/academic-year', roles: ['admin'], badge: 'Settings' },
-    { title: 'Grade Scale', href: '/app/settings/grade-scale', roles: ['admin'], badge: 'Settings' },
-    { title: 'Password & Security', href: '/app/account/password', roles: ['admin', 'principal', 'teacher', 'accountant', 'parent', 'student'], badge: 'Account' },
-  ];
-
-  const matchedPages = ALL_PAGES.filter(
+  const matchedPages = SEARCH_PAGES.filter(
     (p) =>
       p.roles.includes(user.role) &&
       p.title.toLowerCase().includes(q.toLowerCase())

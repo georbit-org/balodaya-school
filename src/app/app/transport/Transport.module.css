@@ -34,6 +34,9 @@
 }
 
 .routeCard {
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
   padding: var(--sp-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);

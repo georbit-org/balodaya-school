@@ -1,6 +1,7 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
 import { readSession } from '@/server/session';
+import { SessionProvider } from '@/components/auth/SessionProvider';
 import { AppShell } from './AppShell';
 
 export default async function AppLayout({
@@ -14,5 +15,9 @@ export default async function AppLayout({
     redirect('/login');
   }
 
-  return <AppShell user={user}>{children}</AppShell>;
+  return (
+    <SessionProvider user={user}>
+      <AppShell user={user}>{children}</AppShell>
+    </SessionProvider>
+  );
 }

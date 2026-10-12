@@ -12,6 +12,11 @@ import { HeroSlideshow } from '@/components/hero/HeroSlideshow';
 import type { HeroSlideRecord } from '@/app/api/hero-slides/route';
 import styles from './page.module.css';
 
+import { readSession } from '@/server/session';
+import { canServer } from '@/server/permissions';
+import { getPageBySlug } from '@/server/cms';
+import { PageRenderer } from '@/components/cms/PageRenderer';
+
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
@@ -20,6 +25,18 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
+  const session = await readSession().catch(() => null);
+  const canEdit = session ? await canServer(session.role, 'cms.edit').catch(() => false) : false;
+
+  const cmsPage = await getPageBySlug('', { includeDrafts: canEdit }).catch(() => null);
+  if (cmsPage && cmsPage.sections && cmsPage.sections.length > 0) {
+    return (
+      <div className={styles.page}>
+        <h1 className="srOnly">{SCHOOL_INFO.name} — Bheerkot, Syangja</h1>
+        <PageRenderer page={cmsPage} canEdit={canEdit} />
+      </div>
+    );
+  }
   const heroSlides = await query<HeroSlideRecord>(
     `SELECT id, badge, title, subtitle, image, 
             primary_cta_text, primary_cta_link, 

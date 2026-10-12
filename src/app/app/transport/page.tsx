@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Field } from '@/components/ui/Field';
 import { DataTable, Column } from '@/components/ui/DataTable';
+import { useToast } from '@/components/ui/Toast';
+import { useSession } from '@/components/auth/SessionProvider';
 import styles from './Transport.module.css';
 
 interface RouteItem {
@@ -47,12 +49,16 @@ interface StudentOption {
 }
 
 export default function TransportManagementPage() {
+  const { showToast } = useToast();
+
   const [routes, setRoutes] = useState<RouteItem[]>([]);
-  const [selectedRoute, setSelectedRoute] = useState<RouteItem | null>(null);
+  const [selectedRouteId, setSelectedRouteId] = useState<number | null>(null);
   const [passengers, setPassengers] = useState<PassengerItem[]>([]);
   const [stops, setStops] = useState<StopItem[]>([]);
   const [loadingRoutes, setLoadingRoutes] = useState(true);
   const [loadingRoster, setLoadingRoster] = useState(false);
+  const { user, can } = useSession();
+  const canManage = can('transport.manage');
 
   // Options
   const [students, setStudents] = useState<StudentOption[]>([]);
@@ -72,7 +78,6 @@ export default function TransportManagementPage() {
   const [newStopForm, setNewStopForm] = useState({
     name: '',
     pickup_time: '',
-    sort_order: '0',
   });
 
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
@@ -81,67 +86,99 @@ export default function TransportManagementPage() {
     stop_id: '',
   });
 
+  // Confirmation dialogs
+  const [studentToUnassign, setStudentToUnassign] = useState<PassengerItem | null>(null);
+  const [routeToDelete, setRouteToDelete] = useState<RouteItem | null>(null);
+
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [submittingStop, setSubmittingStop] = useState(false);
+  const [deletingStopId, setDeletingStopId] = useState<number | null>(null);
 
-  const loadRoutes = useCallback(async () => {
-    setLoadingRoutes(true);
+  // Request counter to avoid race conditions when switching routes quickly
+  const rosterReqSeq = useRef(0);
+
+  const selectedRoute = useMemo(() => {
+    return routes.find((r) => r.id === selectedRouteId) ?? null;
+  }, [routes, selectedRouteId]);
+
+  // Load students for assignment if manager
+  useEffect(() => {
+    if (canManage) {
+      fetch('/api/students?pageSize=200')
+        .then((res) => res.json())
+        .then((sd) => setStudents(sd.items || []))
+        .catch(() => {});
+    }
+  }, [canManage]);
+
+  // Stable loadRoutes function that has NO dependency on selectedRoute
+  const loadRoutes = useCallback(async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) {
+      setLoadingRoutes(true);
+    }
     try {
       const res = await fetch('/api/transport/routes');
       if (res.ok) {
         const d = await res.json();
         const rList: RouteItem[] = d.routes || [];
         setRoutes(rList);
-        if (rList.length > 0 && !selectedRoute) {
-          setSelectedRoute(rList[0]);
-        } else if (selectedRoute) {
-          const updated = rList.find((r) => r.id === selectedRoute.id);
-          if (updated) setSelectedRoute(updated);
-        }
+        setSelectedRouteId((prev) => {
+          if (prev !== null && rList.some((r) => r.id === prev)) {
+            return prev;
+          }
+          return rList[0]?.id ?? null;
+        });
       }
     } finally {
       setLoadingRoutes(false);
     }
-  }, [selectedRoute]);
+  }, []);
 
-  const loadRoster = useCallback(async (routeId: number) => {
-    setLoadingRoster(true);
+  // Load roster and stops for a route
+  const loadRoster = useCallback(async (routeId: number, opts?: { silent?: boolean }) => {
+    if (!opts?.silent) {
+      setLoadingRoster(true);
+    }
+    const seq = ++rosterReqSeq.current;
+
     try {
-      const res = await fetch(`/api/transport/routes/${routeId}/roster`);
-      if (res.ok) {
-        const d = await res.json();
+      const [rosterRes, stopsRes] = await Promise.all([
+        fetch(`/api/transport/routes/${routeId}/roster`),
+        fetch(`/api/transport/routes/${routeId}/stops`),
+      ]);
+
+      if (seq !== rosterReqSeq.current) return; // Outdated request
+
+      if (rosterRes.ok) {
+        const d = await rosterRes.json();
         setPassengers(d.passengers || []);
       }
-
-      const stopsRes = await fetch(`/api/transport/routes/${routeId}/stops`);
       if (stopsRes.ok) {
         const sd = await stopsRes.json();
         setStops(sd.stops || []);
       }
     } finally {
-      setLoadingRoster(false);
+      if (seq === rosterReqSeq.current) {
+        setLoadingRoster(false);
+      }
     }
   }, []);
 
+  // Load routes on mount
   useEffect(() => {
     loadRoutes();
   }, [loadRoutes]);
 
+  // Load roster when selectedRouteId changes
   useEffect(() => {
-    if (selectedRoute) {
-      loadRoster(selectedRoute.id);
+    if (selectedRouteId !== null) {
+      loadRoster(selectedRouteId);
     } else {
       setPassengers([]);
       setStops([]);
     }
-  }, [selectedRoute, loadRoster]);
-
-  useEffect(() => {
-    fetch('/api/students?pageSize=200')
-      .then((r) => r.json())
-      .then((d) => setStudents(d.items || []))
-      .catch(() => {});
-  }, []);
+  }, [selectedRouteId, loadRoster]);
 
   const handleSaveRoute = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,8 +197,9 @@ export default function TransportManagementPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to save route');
 
+      showToast(isEdit ? 'Route updated successfully.' : 'Route created successfully.', 'success');
       setIsRouteDialogOpen(false);
-      loadRoutes();
+      await loadRoutes({ silent: true });
     } catch (err: unknown) {
       setFormError(err instanceof Error ? err.message : 'Error saving route');
     } finally {
@@ -173,38 +211,55 @@ export default function TransportManagementPage() {
     e.preventDefault();
     if (!selectedRoute) return;
     setFormError('');
+    setSubmittingStop(true);
     try {
       const res = await fetch(`/api/transport/routes/${selectedRoute.id}/stops`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newStopForm),
+        body: JSON.stringify({
+          ...newStopForm,
+          sort_order: stops.length + 1,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to add stop');
 
-      setNewStopForm({ name: '', pickup_time: '', sort_order: '0' });
-      loadRoster(selectedRoute.id);
-      loadRoutes();
+      showToast('Stop added successfully.', 'success');
+      setNewStopForm({ name: '', pickup_time: '' });
+      await Promise.all([
+        loadRoster(selectedRoute.id, { silent: true }),
+        loadRoutes({ silent: true }),
+      ]);
     } catch (err: unknown) {
       setFormError(err instanceof Error ? err.message : 'Error adding stop');
+    } finally {
+      setSubmittingStop(false);
     }
   };
 
   const handleDeleteStop = async (stopId: number) => {
     if (!selectedRoute) return;
+    setDeletingStopId(stopId);
+    setFormError('');
     try {
       const res = await fetch(`/api/transport/routes/${selectedRoute.id}/stops/${stopId}`, {
         method: 'DELETE',
       });
+      const data = await res.json();
       if (!res.ok) {
-        const data = await res.json();
-        alert(data.error || 'Failed to delete stop');
+        showToast(data.error || 'Failed to delete stop', 'error');
+        setFormError(data.error || 'Failed to delete stop');
         return;
       }
-      loadRoster(selectedRoute.id);
-      loadRoutes();
+      showToast('Stop deleted.', 'info');
+      await Promise.all([
+        loadRoster(selectedRoute.id, { silent: true }),
+        loadRoutes({ silent: true }),
+      ]);
     } catch (err) {
-      console.error(err);
+      showToast('Connection error deleting stop.', 'error');
+    } finally {
+      setDeletingStopId(null);
     }
   };
 
@@ -226,10 +281,13 @@ export default function TransportManagementPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to assign student');
 
+      showToast('Student assigned to route.', 'success');
       setIsAssignDialogOpen(false);
       setAssignForm({ student_id: '', stop_id: '' });
-      loadRoster(selectedRoute.id);
-      loadRoutes();
+      await Promise.all([
+        loadRoster(selectedRoute.id, { silent: true }),
+        loadRoutes({ silent: true }),
+      ]);
     } catch (err: unknown) {
       setFormError(err instanceof Error ? err.message : 'Error assigning student');
     } finally {
@@ -237,20 +295,52 @@ export default function TransportManagementPage() {
     }
   };
 
-  const handleUnassign = async (studentId: number) => {
-    if (!confirm('Remove this student from school transport?')) return;
+  const handleConfirmUnassign = async () => {
+    if (!studentToUnassign || !selectedRoute) return;
+    setSubmitting(true);
     try {
       const res = await fetch('/api/transport/assign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ student_id: studentId, route_id: null }),
+        body: JSON.stringify({ student_id: studentToUnassign.student_id, route_id: null }),
       });
-      if (res.ok && selectedRoute) {
-        loadRoster(selectedRoute.id);
-        loadRoutes();
+      if (res.ok) {
+        showToast(`Removed ${studentToUnassign.full_name} from route.`, 'info');
+        setStudentToUnassign(null);
+        await Promise.all([
+          loadRoster(selectedRoute.id, { silent: true }),
+          loadRoutes({ silent: true }),
+        ]);
+      } else {
+        const data = await res.json();
+        showToast(data.error || 'Failed to remove student.', 'error');
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      showToast('Network error removing student.', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleConfirmDeleteRoute = async () => {
+    if (!routeToDelete) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/transport/routes/${routeToDelete.id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.error || 'Cannot delete route.', 'error');
+        return;
+      }
+      showToast('Route deleted successfully.', 'info');
+      setRouteToDelete(null);
+      await loadRoutes({ silent: true });
+    } catch {
+      showToast('Error deleting route.', 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -264,16 +354,26 @@ export default function TransportManagementPage() {
     },
     { key: 'stop_name', label: 'Designated Stop', render: (p) => p.stop_name || 'Main Gate' },
     { key: 'pickup_time', label: 'Pickup Time', render: (p) => p.pickup_time || '—' },
-    { key: 'guardian_phone', label: 'Emergency Contact', render: (p) => p.guardian_phone || '—' },
-    {
-      key: 'student_id',
-      label: 'Actions',
-      render: (p) => (
-        <Button variant="secondary" size="sm" onClick={() => handleUnassign(p.student_id)}>
-          Remove
-        </Button>
-      ),
-    },
+    ...(user.role !== 'parent' && user.role !== 'student'
+      ? [{ key: 'guardian_phone', label: 'Emergency Contact', render: (p: PassengerItem) => p.guardian_phone || '—' }]
+      : []),
+    ...(canManage
+      ? [
+          {
+            key: 'actions',
+            label: 'Actions',
+            render: (p: PassengerItem) => (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setStudentToUnassign(p)}
+              >
+                Remove
+              </Button>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -282,23 +382,25 @@ export default function TransportManagementPage() {
         title="School Transport Management"
         description="Bus routes, designated pickup stops, and student passenger rosters."
         actions={
-          <Button
-            variant="primary"
-            onClick={() => {
-              setRouteForm({
-                id: null,
-                name: '',
-                vehicle_no: '',
-                driver_name: '',
-                driver_phone: '',
-                monthly_fee: '1500',
-              });
-              setFormError('');
-              setIsRouteDialogOpen(true);
-            }}
-          >
-            + Add New Route
-          </Button>
+          canManage && (
+            <Button
+              variant="primary"
+              onClick={() => {
+                setRouteForm({
+                  id: null,
+                  name: '',
+                  vehicle_no: '',
+                  driver_name: '',
+                  driver_phone: '',
+                  monthly_fee: '1500',
+                });
+                setFormError('');
+                setIsRouteDialogOpen(true);
+              }}
+            >
+              + Add New Route
+            </Button>
+          )
         }
       />
 
@@ -311,21 +413,22 @@ export default function TransportManagementPage() {
 
           <div className={styles.routeList}>
             {routes.map((r) => (
-              <div
+              <button
+                type="button"
                 key={r.id}
-                className={`${styles.routeCard} ${selectedRoute?.id === r.id ? styles.activeRouteCard : ''}`}
-                onClick={() => setSelectedRoute(r)}
+                className={`${styles.routeCard} ${selectedRouteId === r.id ? styles.activeRouteCard : ''}`}
+                onClick={() => setSelectedRouteId(r.id)}
               >
                 <div className={styles.routeHeader}>
                   <span className={styles.routeName}>{r.name}</span>
                   <span className={styles.routeBadge}>{r.passenger_count} riders</span>
                 </div>
                 <div className={styles.routeMeta}>
-                  <span>Vehicle: {r.vehicle_no || 'Bus'}</span>
+                  <span>Vehicle: {r.vehicle_no || 'Standard Bus'}</span>
                   <span>Driver: {r.driver_name || '—'} {r.driver_phone ? `(${r.driver_phone})` : ''}</span>
                   <span>Fee: NPR {r.monthly_fee}/mo &bull; {r.stop_count} stops</span>
                 </div>
-              </div>
+              </button>
             ))}
             {routes.length === 0 && !loadingRoutes && (
               <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)' }}>
@@ -360,43 +463,58 @@ export default function TransportManagementPage() {
                   >
                     Stops ({stops.length})
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                      setRouteForm({
-                        id: selectedRoute.id,
-                        name: selectedRoute.name,
-                        vehicle_no: selectedRoute.vehicle_no || '',
-                        driver_name: selectedRoute.driver_name || '',
-                        driver_phone: selectedRoute.driver_phone || '',
-                        monthly_fee: String(selectedRoute.monthly_fee),
-                      });
-                      setFormError('');
-                      setIsRouteDialogOpen(true);
-                    }}
-                  >
-                    Edit Route
-                  </Button>
-                  <a
-                    href={`/api/transport/routes/${selectedRoute.id}/export`}
-                    download
-                    style={{ textDecoration: 'none' }}
-                  >
-                    <Button variant="secondary" size="sm">
-                      Export CSV &darr;
+                  {canManage && (
+                    <>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setRouteForm({
+                            id: selectedRoute.id,
+                            name: selectedRoute.name,
+                            vehicle_no: selectedRoute.vehicle_no || '',
+                            driver_name: selectedRoute.driver_name || '',
+                            driver_phone: selectedRoute.driver_phone || '',
+                            monthly_fee: String(selectedRoute.monthly_fee),
+                          });
+                          setFormError('');
+                          setIsRouteDialogOpen(true);
+                        }}
+                      >
+                        Edit Route
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => setRouteToDelete(selectedRoute)}
+                      >
+                        Delete
+                      </Button>
+                    </>
+                  )}
+                  {canManage && (
+                    <a
+                      href={`/api/transport/routes/${selectedRoute.id}/export`}
+                      download
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <Button variant="secondary" size="sm">
+                        Export CSV &darr;
+                      </Button>
+                    </a>
+                  )}
+                  {canManage && (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => {
+                        setFormError('');
+                        setIsAssignDialogOpen(true);
+                      }}
+                    >
+                      + Assign Student
                     </Button>
-                  </a>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => {
-                      setFormError('');
-                      setIsAssignDialogOpen(true);
-                    }}
-                  >
-                    + Assign Student
-                  </Button>
+                  )}
                 </div>
               </div>
 
@@ -418,7 +536,10 @@ export default function TransportManagementPage() {
       {/* Add / Edit Route Dialog */}
       <Dialog
         open={isRouteDialogOpen}
-        onClose={() => setIsRouteDialogOpen(false)}
+        onClose={() => {
+          setIsRouteDialogOpen(false);
+          setFormError('');
+        }}
         title={routeForm.id ? 'Edit Transport Route' : 'Add New Transport Route'}
       >
         <form onSubmit={handleSaveRoute} className={styles.dialogForm}>
@@ -470,7 +591,14 @@ export default function TransportManagementPage() {
             </Field>
           </div>
           <div className={styles.dialogActions}>
-            <Button variant="secondary" type="button" onClick={() => setIsRouteDialogOpen(false)}>
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => {
+                setIsRouteDialogOpen(false);
+                setFormError('');
+              }}
+            >
               Cancel
             </Button>
             <Button variant="primary" type="submit" disabled={submitting}>
@@ -483,39 +611,44 @@ export default function TransportManagementPage() {
       {/* Manage Stops Dialog */}
       <Dialog
         open={isStopsDialogOpen}
-        onClose={() => setIsStopsDialogOpen(false)}
+        onClose={() => {
+          setIsStopsDialogOpen(false);
+          setFormError('');
+        }}
         title={`Designated Stops: ${selectedRoute?.name}`}
       >
         <div className={styles.dialogForm}>
           {formError && <div className={styles.errorBanner}>{formError}</div>}
 
-          <form onSubmit={handleAddStop} style={{ borderBottom: '1px solid var(--border)', paddingBottom: 'var(--sp-3)' }}>
-            <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, margin: '0 0 var(--sp-2) 0' }}>Add Stop</h3>
-            <div className={styles.formGrid}>
-              <Field label="Stop Name *" required>
-                <input
-                  type="text"
-                  required
-                  value={newStopForm.name}
-                  onChange={(e) => setNewStopForm({ ...newStopForm, name: e.target.value })}
-                  placeholder="e.g. Dhaubadi Chowk"
-                />
-              </Field>
-              <Field label="Morning Pickup Time">
-                <input
-                  type="text"
-                  value={newStopForm.pickup_time}
-                  onChange={(e) => setNewStopForm({ ...newStopForm, pickup_time: e.target.value })}
-                  placeholder="e.g. 08:45 AM"
-                />
-              </Field>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--sp-2)' }}>
-              <Button variant="primary" size="sm" type="submit">
-                + Add Stop
-              </Button>
-            </div>
-          </form>
+          {canManage && (
+            <form onSubmit={handleAddStop} style={{ borderBottom: '1px solid var(--border)', paddingBottom: 'var(--sp-3)' }}>
+              <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, margin: '0 0 var(--sp-2) 0' }}>Add Stop</h3>
+              <div className={styles.formGrid}>
+                <Field label="Stop Name *" required>
+                  <input
+                    type="text"
+                    required
+                    value={newStopForm.name}
+                    onChange={(e) => setNewStopForm({ ...newStopForm, name: e.target.value })}
+                    placeholder="e.g. Dhaubadi Chowk"
+                  />
+                </Field>
+                <Field label="Morning Pickup Time">
+                  <input
+                    type="text"
+                    value={newStopForm.pickup_time}
+                    onChange={(e) => setNewStopForm({ ...newStopForm, pickup_time: e.target.value })}
+                    placeholder="e.g. 08:45 AM"
+                  />
+                </Field>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--sp-2)' }}>
+                <Button variant="primary" size="sm" type="submit" disabled={submittingStop}>
+                  {submittingStop ? 'Adding...' : '+ Add Stop'}
+                </Button>
+              </div>
+            </form>
+          )}
 
           <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, margin: 'var(--sp-2) 0 0 0' }}>Current Stops</h3>
           <div className={styles.stopList}>
@@ -525,9 +658,16 @@ export default function TransportManagementPage() {
                   <strong>{idx + 1}. {s.name}</strong>
                   {s.pickup_time && <span style={{ marginLeft: '8px', color: 'var(--ink-soft)', fontSize: '13px' }}>({s.pickup_time})</span>}
                 </div>
-                <Button variant="secondary" size="sm" onClick={() => handleDeleteStop(s.id)}>
-                  Delete
-                </Button>
+                {canManage && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={deletingStopId === s.id}
+                    onClick={() => handleDeleteStop(s.id)}
+                  >
+                    {deletingStopId === s.id ? 'Deleting...' : 'Delete'}
+                  </Button>
+                )}
               </div>
             ))}
             {stops.length === 0 && (
@@ -538,7 +678,14 @@ export default function TransportManagementPage() {
           </div>
 
           <div className={styles.dialogActions}>
-            <Button variant="secondary" type="button" onClick={() => setIsStopsDialogOpen(false)}>
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => {
+                setIsStopsDialogOpen(false);
+                setFormError('');
+              }}
+            >
               Close
             </Button>
           </div>
@@ -548,7 +695,10 @@ export default function TransportManagementPage() {
       {/* Assign Student Dialog */}
       <Dialog
         open={isAssignDialogOpen}
-        onClose={() => setIsAssignDialogOpen(false)}
+        onClose={() => {
+          setIsAssignDialogOpen(false);
+          setFormError('');
+        }}
         title={`Assign Student to ${selectedRoute?.name}`}
       >
         <form onSubmit={handleAssignStudent} className={styles.dialogForm}>
@@ -583,7 +733,14 @@ export default function TransportManagementPage() {
           </Field>
 
           <div className={styles.dialogActions}>
-            <Button variant="secondary" type="button" onClick={() => setIsAssignDialogOpen(false)}>
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => {
+                setIsAssignDialogOpen(false);
+                setFormError('');
+              }}
+            >
               Cancel
             </Button>
             <Button variant="primary" type="submit" disabled={submitting}>
@@ -591,6 +748,73 @@ export default function TransportManagementPage() {
             </Button>
           </div>
         </form>
+      </Dialog>
+
+      {/* Confirmation Dialog: Unassign Student */}
+      <Dialog
+        open={Boolean(studentToUnassign)}
+        onClose={() => setStudentToUnassign(null)}
+        title="Remove Student from Transport"
+      >
+        <div className={styles.dialogForm}>
+          <p style={{ margin: 0, color: 'var(--ink)' }}>
+            Are you sure you want to remove <strong>{studentToUnassign?.full_name}</strong> ({studentToUnassign?.admission_no}) from this transport route?
+          </p>
+          <div className={styles.dialogActions}>
+            <Button
+              variant="secondary"
+              type="button"
+              disabled={submitting}
+              onClick={() => setStudentToUnassign(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              type="button"
+              disabled={submitting}
+              onClick={handleConfirmUnassign}
+            >
+              {submitting ? 'Removing...' : 'Confirm Removal'}
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Confirmation Dialog: Delete Route */}
+      <Dialog
+        open={Boolean(routeToDelete)}
+        onClose={() => setRouteToDelete(null)}
+        title="Delete Transport Route"
+      >
+        <div className={styles.dialogForm}>
+          <p style={{ margin: 0, color: 'var(--ink)' }}>
+            Are you sure you want to delete route <strong>{routeToDelete?.name}</strong>?
+          </p>
+          {routeToDelete && routeToDelete.passenger_count > 0 && (
+            <div className={styles.errorBanner}>
+              This route currently has {routeToDelete.passenger_count} assigned passenger(s). You must unassign them before deleting the route.
+            </div>
+          )}
+          <div className={styles.dialogActions}>
+            <Button
+              variant="secondary"
+              type="button"
+              disabled={submitting}
+              onClick={() => setRouteToDelete(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              type="button"
+              disabled={submitting || Boolean(routeToDelete && routeToDelete.passenger_count > 0)}
+              onClick={handleConfirmDeleteRoute}
+            >
+              {submitting ? 'Deleting...' : 'Delete Route'}
+            </Button>
+          </div>
+        </div>
       </Dialog>
     </div>
   );

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Field } from '@/components/ui/Field';
 import { DataTable, Column } from '@/components/ui/DataTable';
+import { useSession } from '@/components/auth/SessionProvider';
 import styles from './Library.module.css';
 
 interface BookItem {
@@ -51,6 +52,12 @@ interface StaffOption {
 }
 
 export default function LibraryManagementPage() {
+  const { user, can } = useSession();
+  const canIssueReturn = can('library.issue_return');
+  const canAddBook = can('library.manage_books');
+  const isStudent = user?.role === 'student';
+  const isParent = user?.role === 'parent';
+
   const [activeTab, setActiveTab] = useState<'catalog' | 'active' | 'overdue' | 'history'>('catalog');
   const [books, setBooks] = useState<BookItem[]>([]);
   const [loans, setLoans] = useState<LoanItem[]>([]);
@@ -207,24 +214,28 @@ export default function LibraryManagementPage() {
         </span>
       ),
     },
-    {
-      key: 'id',
-      label: 'Actions',
-      render: (b) => (
-        <Button
-          variant="secondary"
-          size="sm"
-          disabled={b.available <= 0}
-          onClick={() => {
-            setIssueForm((prev) => ({ ...prev, book_id: String(b.id) }));
-            setFormError('');
-            setIsIssueOpen(true);
-          }}
-        >
-          Issue
-        </Button>
-      ),
-    },
+    ...(canIssueReturn
+      ? [
+          {
+            key: 'id',
+            label: 'Actions',
+            render: (b: BookItem) => (
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={b.available <= 0}
+                onClick={() => {
+                  setIssueForm((prev) => ({ ...prev, book_id: String(b.id) }));
+                  setFormError('');
+                  setIsIssueOpen(true);
+                }}
+              >
+                Issue
+              </Button>
+            ),
+          },
+        ]
+      : []),
   ];
 
   // Columns for Loans
@@ -274,46 +285,59 @@ export default function LibraryManagementPage() {
         return <span className={`${styles.statusPill} ${cls}`}>{text}</span>;
       },
     },
-    {
-      key: 'id',
-      label: 'Actions',
-      render: (l) => {
-        if (l.returned_on) return <span style={{ color: 'var(--ink-soft)', fontSize: '13px' }}>Completed</span>;
-        return (
-          <Button variant="secondary" size="sm" onClick={() => handleReturnBook(l.id)}>
-            Return
-          </Button>
-        );
-      },
-    },
+    ...(canIssueReturn
+      ? [
+          {
+            key: 'id',
+            label: 'Actions',
+            render: (l: LoanItem) => {
+              if (l.returned_on) return <span style={{ color: 'var(--ink-soft)', fontSize: '13px' }}>Completed</span>;
+              return (
+                <Button variant="secondary" size="sm" onClick={() => handleReturnBook(l.id)}>
+                  Return
+                </Button>
+              );
+            },
+          },
+        ]
+      : []),
   ];
+
+  const pageTitle = isStudent ? 'School Library & My Books' : isParent ? "School Library & Children's Loans" : 'Library Management';
+  const pageDescription = isStudent || isParent
+    ? 'Browse the school book catalog and check currently borrowed books and due dates.'
+    : 'Catalog circulation, book availability tracking, and student loan management.';
 
   return (
     <div className={styles.container}>
       <PageHeader
-        title="Library Management"
-        description="Catalog circulation, book availability tracking, and student loan management."
+        title={pageTitle}
+        description={pageDescription}
         actions={
-          <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setFormError('');
-                setIsIssueOpen(true);
-              }}
-            >
-              Issue Book
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => {
-                setFormError('');
-                setIsAddBookOpen(true);
-              }}
-            >
-              + Add New Book
-            </Button>
-          </div>
+          canIssueReturn ? (
+            <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setFormError('');
+                  setIsIssueOpen(true);
+                }}
+              >
+                Issue Book
+              </Button>
+              {canAddBook && (
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setFormError('');
+                    setIsAddBookOpen(true);
+                  }}
+                >
+                  + Add New Book
+                </Button>
+              )}
+            </div>
+          ) : undefined
         }
       />
 
@@ -329,19 +353,21 @@ export default function LibraryManagementPage() {
           className={`${styles.tabBtn} ${activeTab === 'active' ? styles.activeTab : ''}`}
           onClick={() => setActiveTab('active')}
         >
-          Active Loans
+          {isStudent ? 'My Borrowed Books' : isParent ? "Children's Borrowed Books" : 'Active Loans'}
         </button>
-        <button
-          className={`${styles.tabBtn} ${activeTab === 'overdue' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('overdue')}
-        >
-          Overdue Loans
-        </button>
+        {canIssueReturn && (
+          <button
+            className={`${styles.tabBtn} ${activeTab === 'overdue' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('overdue')}
+          >
+            Overdue Loans
+          </button>
+        )}
         <button
           className={`${styles.tabBtn} ${activeTab === 'history' ? styles.activeTab : ''}`}
           onClick={() => setActiveTab('history')}
         >
-          Full Loan History
+          {isStudent ? 'My Loan History' : 'Full Loan History'}
         </button>
       </div>
 

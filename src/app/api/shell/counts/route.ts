@@ -1,4 +1,3 @@
-import { NextResponse } from 'next/server';
 import { readSession } from '@/server/session';
 import { one } from '@/server/db';
 import { jsonOk, jsonUnauthorized } from '@/server/http';
@@ -24,7 +23,11 @@ export async function GET() {
       const leaveRow = await one<{ count: number }>(
         `SELECT COUNT(*) as count FROM leave_requests WHERE status = 'pending'`
       );
-      leaveCount = leaveRow?.count || 0;
+      const staffLeaveRow = await one<{ count: number }>(
+        `SELECT COUNT(*) as count FROM staff_leave_requests WHERE status = 'pending' AND user_id != ?`,
+        [user.id]
+      );
+      leaveCount = (leaveRow?.count || 0) + (staffLeaveRow?.count || 0);
 
       const msgRow = await one<{ count: number }>(
         `SELECT COUNT(*) as count FROM messages WHERE status = 'new'`

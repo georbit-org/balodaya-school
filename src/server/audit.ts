@@ -15,19 +15,28 @@ export async function recordAudit(
   userId: number | null,
   action: string,
   entity?: string,
-  entityId?: number,
-  detail?: string
+  entityId?: number | string | null,
+  detail?: unknown
 ): Promise<void> {
   try {
+    const detailStr =
+      detail === undefined || detail === null
+        ? null
+        : typeof detail === 'string'
+        ? detail
+        : JSON.stringify(detail);
+
     await run(
       `INSERT INTO audit_log (user_id, action, entity, entity_id, detail, created_at)
        VALUES (?, ?, ?, ?, ?, datetime('now'))`,
-      [userId, action, entity ?? null, entityId ?? null, detail ?? null]
+      [userId, action, entity ?? null, entityId ?? null, detailStr]
     );
   } catch (err) {
     console.error('Failed to write audit log:', err);
   }
 }
+
+export const audit = recordAudit;
 
 export async function getRecentAudit(limit = 10): Promise<AuditEntry[]> {
   try {

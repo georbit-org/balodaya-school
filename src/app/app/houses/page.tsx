@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Field } from '@/components/ui/Field';
 import { DataTable, Column } from '@/components/ui/DataTable';
+import { useSession } from '@/components/auth/SessionProvider';
 import styles from './Houses.module.css';
 
 interface HouseItem {
@@ -35,6 +36,9 @@ const HOUSE_COLORS: Record<string, string> = {
 };
 
 export default function HousesManagementPage() {
+  const { can } = useSession();
+  const canAward = can('house.award_points');
+
   const [houses, setHouses] = useState<HouseItem[]>([]);
   const [logs, setLogs] = useState<PointLogItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -133,21 +137,23 @@ export default function HousesManagementPage() {
         title="Collegiate Houses & Leaderboard"
         description="House standings, point awards for co-curricular competitions, and student house rosters."
         actions={
-          <Button
-            variant="primary"
-            onClick={() => {
-              setAwardForm({
-                house_id: houses.length > 0 ? String(houses[0].id) : '',
-                points: 10,
-                reason: '',
-                awarded_on: new Date().toISOString().split('T')[0],
-              });
-              setFormError('');
-              setIsAwardOpen(true);
-            }}
-          >
-            + Award / Deduct Points
-          </Button>
+          canAward ? (
+            <Button
+              variant="primary"
+              onClick={() => {
+                setAwardForm({
+                  house_id: houses.length > 0 ? String(houses[0].id) : '',
+                  points: 10,
+                  reason: '',
+                  awarded_on: new Date().toISOString().split('T')[0],
+                });
+                setFormError('');
+                setIsAwardOpen(true);
+              }}
+            >
+              + Award / Deduct Points
+            </Button>
+          ) : undefined
         }
       />
 

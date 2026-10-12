@@ -5,6 +5,8 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Field } from '@/components/ui/Field';
+import { Icon } from '@/components/ui/Icon';
+import { useSession } from '@/components/auth/SessionProvider';
 import styles from './Timetable.module.css';
 
 interface SlotData {
@@ -30,6 +32,9 @@ const DAYS = [
 const PERIODS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 export default function TimetablePage() {
+  const { user, can } = useSession();
+  const canManage = can('timetable.manage');
+
   const [sections, setSections] = useState<{ id: number; classId: number; label: string }[]>([]);
   const [selectedSectionId, setSelectedSectionId] = useState('');
   const [slots, setSlots] = useState<SlotData[]>([]);
@@ -47,6 +52,20 @@ export default function TimetablePage() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [collisionError, setCollisionError] = useState('');
+
+  // If student, auto-fetch their enrolled section
+  useEffect(() => {
+    if (user?.role === 'student') {
+      fetch('/api/students/me')
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.student?.section_id) {
+            setSelectedSectionId(String(d.student.section_id));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user?.role]);
 
   // Load sections and teachers
   useEffect(() => {
@@ -66,13 +85,15 @@ export default function TimetablePage() {
       })
       .catch(() => {});
 
-    fetch('/api/users?role=teacher')
-      .then((r) => r.json())
-      .then((d) => {
-        setTeachers((d.items || []).map((u: { id: number; name: string }) => ({ id: u.id, name: u.name })));
-      })
-      .catch(() => {});
-  }, [selectedSectionId]);
+    if (canManage) {
+      fetch('/api/users?role=teacher')
+        .then((r) => r.json())
+        .then((d) => {
+          setTeachers((d.items || []).map((u: { id: number; name: string }) => ({ id: u.id, name: u.name })));
+        })
+        .catch(() => {});
+    }
+  }, [selectedSectionId, canManage]);
 
   // Load subjects for the current section's class
   useEffect(() => {
@@ -111,6 +132,7 @@ export default function TimetablePage() {
   }, [loadSlots]);
 
   const handleCellClick = (day: number, period: number) => {
+    if (!canManage) return;
     const existing = slots.find((s) => s.day_of_week === day && s.period === period) || null;
     setSelectedCell({ day, period, slot: existing });
     setCellForm({
@@ -201,7 +223,7 @@ export default function TimetablePage() {
         </div>
 
         <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-muted)' }}>
-          Click any cell to schedule subject and instructor.
+          {canManage ? 'Click any cell to schedule subject and instructor.' : 'Weekly scheduled class periods.'}
         </span>
       </div>
 
@@ -222,7 +244,11 @@ export default function TimetablePage() {
                 {PERIODS.map((p) => {
                   const slot = slots.find((s) => s.day_of_week === d.index && s.period === p);
                   return (
-                    <td key={p} onClick={() => handleCellClick(d.index, p)}>
+                    <td
+                      key={p}
+                      onClick={() => handleCellClick(d.index, p)}
+                      style={{ cursor: canManage ? 'pointer' : 'default' }}
+                    >
                       <div className={styles.cellCard}>
                         {slot && slot.subject_name ? (
                           <>
@@ -232,7 +258,7 @@ export default function TimetablePage() {
                             )}
                           </>
                         ) : (
-                          <div className={styles.cellEmpty}>+ Assign</div>
+                          <div className={styles.cellEmpty}>{canManage ? '+ Assign' : '—'}</div>
                         )}
                       </div>
                     </td>
@@ -256,8 +282,9 @@ export default function TimetablePage() {
       >
         <form onSubmit={handleSaveCell} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
           {collisionError && (
-            <div style={{ padding: 'var(--space-3)', background: '#fce8e6', color: '#c5221f', borderRadius: '4px', fontSize: 'var(--text-sm)', fontWeight: 600 }}>
-              ⚠ {collisionError}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: 'var(--space-3)', background: '#fce8e6', color: '#c5221f', borderRadius: '4px', fontSize: 'var(--text-sm)', fontWeight: 600 }}>
+              <Icon name="alert-triangle" size={16} />
+              <span>{collisionError}</span>
             </div>
           )}
 

@@ -3,7 +3,7 @@ import { one, query } from '@/server/db';
 import { handle, json, HttpError } from '@/server/http';
 
 export const GET = handle(async (req: Request, context?: { params: Promise<{ id: string }> }) => {
-  await requireUser();
+  const user = await requireUser();
   const params = await context?.params;
   const paymentId = parseInt(params?.id || '', 10);
   if (isNaN(paymentId)) throw new HttpError(400, 'Invalid payment ID.');
@@ -46,6 +46,26 @@ export const GET = handle(async (req: Request, context?: { params: Promise<{ id:
   );
 
   if (!payment) throw new HttpError(404, 'Payment receipt not found.');
+
+  if (user.role === 'parent') {
+    const isParent = await one(
+      'SELECT 1 FROM student_guardians WHERE user_id = ? AND student_id = ?',
+      [user.id, payment.student_id]
+    );
+    if (!isParent) {
+      throw new HttpError(403, 'Forbidden: You can only view receipts for your registered children.');
+    }
+  } else if (user.role === 'student') {
+    const isStudent = await one(
+      'SELECT 1 FROM students WHERE user_id = ? AND id = ?',
+      [user.id, payment.student_id]
+    );
+    if (!isStudent) {
+      throw new HttpError(403, 'Forbidden: You can only view your own receipts.');
+    }
+  } else if (user.role === 'teacher') {
+    throw new HttpError(403, 'Forbidden: Teachers do not have access to fee receipts.');
+  }
 
   // Items from invoice
   const items = await query<{ description: string; amount: number }>(

@@ -44,8 +44,8 @@ export default function UsersAdminPage() {
     pass: string;
   }>({ open: false, email: '', pass: '' });
 
-  const loadUsers = useCallback(async () => {
-    setLoading(true);
+  const loadUsers = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true);
     try {
       const params = new URLSearchParams();
       if (roleFilter) params.set('role', roleFilter);
@@ -64,7 +64,7 @@ export default function UsersAdminPage() {
   }, [roleFilter, search]);
 
   useEffect(() => {
-    loadUsers();
+    loadUsers(false);
   }, [loadUsers]);
 
   const handleCreateUser = async (e: React.FormEvent) => {

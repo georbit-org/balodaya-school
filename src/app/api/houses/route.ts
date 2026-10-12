@@ -1,6 +1,5 @@
-import { readSession } from '@/server/session';
 import { query } from '@/server/db';
-import { handle, json, HttpError } from '@/server/http';
+import { handle, json } from '@/server/http';
 
 export const GET = handle(async () => {
   // Public or authenticated can view house totals

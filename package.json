@@ -7,7 +7,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:init": "node scripts/db-init.mjs"
+    "db:init": "node scripts/db-init.mjs",
+    "seed": "node scripts/seed.mjs",
+    "test:emojis": "node scripts/check-no-emojis.mjs",
+    "test:permissions": "node --experimental-strip-types scripts/permissions.test.mjs",
+    "test:calendar": "node --experimental-strip-types scripts/calendar.test.mjs",
+    "test:role-matrix": "node scripts/role-matrix.mjs",
+    "test:media": "node scripts/scenarios/media.mjs",
+    "test:cms": "node scripts/scenarios/cms.mjs",
+    "test:settings": "node scripts/scenarios/settings.mjs",
+    "test:all": "npm run test:emojis && npm run test:permissions && npm run test:calendar && npm run test:role-matrix && npm run test:media && npm run test:cms && npm run test:settings",
+    "render:start": "node scripts/render-start.mjs && next start -p ${PORT:-3000}"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",

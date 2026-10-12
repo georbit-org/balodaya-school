@@ -1,0 +1,38 @@
+# Render Infrastructure as Code Blueprint
+# Balodaya Secondary English Boarding School - School Management System & CMS
+# Documentation: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: balodaya-school
+    runtime: node
+    plan: starter # Note: Starter plan is required for Persistent Disk storage (/data)
+    region: singapore # Singapore datacenter provides lowest latency to Nepal
+    buildCommand: npm install && npm run build
+    startCommand: npm run render:start
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: file:/data/balodaya.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@balodaya.edu.np
+      - key: ADMIN_NAME
+        value: Balodaya Administration
+      - key: ADMIN_PASSWORD
+        value: BalodayaAdmin2026!
+      - key: SCHOOL_NAME
+        value: Balodaya Secondary English Boarding School
+      - key: SCHOOL_PHONE
+        value: "9846043838"
+      - key: SCHOOL_EMAIL
+        value: balodaya2063@gmail.com
+      - key: SCHOOL_LOCATION
+        value: Sundar Bazar, Bheerkot-06, Syangja
+    disk:
+      name: balodaya-data
+      mountPath: /data
+      sizeGB: 1

@@ -1,6 +1,8 @@
 import { requireUser } from '@/server/guard';
 import { query, one, run } from '@/server/db';
 import { handle, json, HttpError } from '@/server/http';
+import { getCalendarContext } from '@/server/services/calendar';
+import { workingDaysBetween } from '@/lib/calendar';
 
 export const GET = handle(async (req: Request) => {
   const user = await requireUser();
@@ -9,6 +11,7 @@ export const GET = handle(async (req: Request) => {
 
   let sql = `
     SELECT lr.id, lr.student_id, lr.from_date, lr.to_date, lr.reason, lr.status,
+           lr.leave_type, lr.working_days, lr.attachment_url,
            lr.reviewed_at, lr.review_note, lr.created_at,
            s.full_name as student_name, s.admission_no,
            c.name as class_name, sec.name as section_name,
@@ -50,7 +53,7 @@ export const GET = handle(async (req: Request) => {
 export const POST = handle(async (req: Request) => {
   const user = await requireUser();
   const body = await req.json().catch(() => ({}));
-  const { student_id, from_date, to_date, reason } = body;
+  const { student_id, from_date, to_date, reason, leave_type = 'Personal / Sick' } = body;
 
   let targetStudentId = student_id ? parseInt(student_id, 10) : null;
 
@@ -83,11 +86,33 @@ export const POST = handle(async (req: Request) => {
     throw new HttpError(400, 'From date cannot be after to date.');
   }
 
+  // 1. Prevent overlapping pending or approved leave requests
+  const overlap = await one(
+    `SELECT id FROM leave_requests
+     WHERE student_id = ? AND status IN ('pending', 'approved')
+       AND NOT (to_date < ? OR from_date > ?)`,
+    [targetStudentId, from_date, to_date]
+  );
+  if (overlap) {
+    throw new HttpError(409, 'An existing leave request already covers all or part of these dates.');
+  }
+
+  // 2. Calculate real working days excluding holidays and weekly off days
+  const calendarCtx = await getCalendarContext();
+  const workingDays = workingDaysBetween(from_date, to_date, calendarCtx);
+
+  if (workingDays === 0) {
+    throw new HttpError(
+      422,
+      'The selected date range contains only non-school days (weekly off days / holidays). Leave cannot be requested.'
+    );
+  }
+
   const res = await run(
-    `INSERT INTO leave_requests (student_id, from_date, to_date, reason, status, requested_by)
-     VALUES (?, ?, ?, ?, 'pending', ?)`,
-    [targetStudentId, from_date, to_date, reason.trim(), user.id]
+    `INSERT INTO leave_requests (student_id, from_date, to_date, reason, status, requested_by, leave_type, working_days)
+     VALUES (?, ?, ?, ?, 'pending', ?, ?, ?)`,
+    [targetStudentId, from_date, to_date, reason.trim(), user.id, leave_type, workingDays]
   );
 
-  return json({ id: Number(res.lastInsertRowid) }, 201);
+  return json({ id: Number(res.lastInsertRowid), workingDays }, 201);
 });

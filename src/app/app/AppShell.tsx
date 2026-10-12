@@ -6,90 +6,15 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { SCHOOL_INFO } from '@/content/school';
 import type { SessionUser } from '@/server/session';
-import { Icon, IconName } from '@/components/ui/Icon';
+import { Icon } from '@/components/ui/Icon';
 import { KeyHint } from '@/components/ui/KeyHint';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Popover } from '@/components/ui/Popover';
 import { CommandPalette } from '@/components/ui/CommandPalette';
+import { getNavGroupsForRole } from '@/lib/nav';
 import styles from './AppShell.module.css';
-
-interface NavItem {
-  label: string;
-  href: string;
-  icon: IconName;
-  roles: Array<SessionUser['role']>;
-  badgeKey?: 'applications' | 'leave' | 'messages' | 'notices';
-}
-
-interface NavGroup {
-  label: string;
-  items: NavItem[];
-}
-
-const NAV_GROUPS: NavGroup[] = [
-  {
-    label: 'Overview',
-    items: [
-      { label: 'Dashboard', href: '/app/dashboard', icon: 'dashboard', roles: ['admin', 'principal', 'teacher', 'accountant', 'parent', 'student'] },
-      { label: 'Reports & Exports', href: '/app/reports', icon: 'reports', roles: ['admin', 'principal', 'teacher', 'accountant'] },
-    ],
-  },
-  {
-    label: 'People',
-    items: [
-      { label: 'Students Directory', href: '/app/students', icon: 'students', roles: ['admin', 'principal', 'teacher', 'accountant', 'parent', 'student'] },
-      { label: 'Admissions Applications', href: '/app/applications', icon: 'applications', roles: ['admin', 'principal'], badgeKey: 'applications' },
-      { label: 'Staff Directory', href: '/app/staff', icon: 'staff', roles: ['admin', 'principal'] },
-      { label: 'User Accounts', href: '/app/users', icon: 'users', roles: ['admin'] },
-    ],
-  },
-  {
-    label: 'Academics',
-    items: [
-      { label: 'Classes & Subjects', href: '/app/classes', icon: 'classes', roles: ['admin', 'principal'] },
-      { label: 'Daily Attendance', href: '/app/attendance', icon: 'attendance', roles: ['admin', 'principal', 'teacher', 'parent', 'student'] },
-      { label: 'Leave Requests', href: '/app/leave', icon: 'leave', roles: ['admin', 'principal', 'teacher', 'parent', 'student'], badgeKey: 'leave' },
-      { label: 'Exams & Marks', href: '/app/exams', icon: 'exams', roles: ['admin', 'principal', 'teacher', 'parent', 'student'] },
-      { label: 'Class Timetable', href: '/app/timetable', icon: 'timetable', roles: ['admin', 'principal', 'teacher', 'student'] },
-    ],
-  },
-  {
-    label: 'Finance',
-    items: [
-      { label: 'Fees & Invoices', href: '/app/fees', icon: 'fees', roles: ['admin', 'principal', 'accountant', 'parent', 'student'] },
-      { label: 'Payments & Receipts', href: '/app/payments', icon: 'receipt', roles: ['admin', 'accountant'] },
-    ],
-  },
-  {
-    label: 'School',
-    items: [
-      { label: 'Notices & Circulars', href: '/app/notices', icon: 'notices', roles: ['admin', 'principal', 'teacher', 'accountant', 'parent', 'student'], badgeKey: 'notices' },
-      { label: 'Library Catalog', href: '/app/library', icon: 'library', roles: ['admin', 'principal', 'teacher', 'student'] },
-      { label: 'Transport Routes', href: '/app/transport', icon: 'transport', roles: ['admin', 'principal', 'parent', 'student'] },
-      { label: 'Houses & Points', href: '/app/houses', icon: 'houses', roles: ['admin', 'principal', 'teacher', 'student'] },
-      { label: 'Academic Resources', href: '/app/resources', icon: 'resources', roles: ['admin', 'principal', 'teacher', 'student'] },
-    ],
-  },
-  {
-    label: 'Website',
-    items: [
-      { label: 'Hero Slideshow', href: '/app/hero-slides', icon: 'slideshow', roles: ['admin', 'principal', 'teacher'] },
-      { label: 'Careers & Vacancies', href: '/app/vacancies', icon: 'vacancies', roles: ['admin', 'principal'] },
-      { label: 'Tenders & Bids', href: '/app/tenders', icon: 'tenders', roles: ['admin', 'principal'] },
-      { label: 'Inquiries & Messages', href: '/app/messages', icon: 'messages', roles: ['admin', 'principal'], badgeKey: 'messages' },
-    ],
-  },
-  {
-    label: 'Settings',
-    items: [
-      { label: 'Academic Years', href: '/app/settings/academic-year', icon: 'calendar', roles: ['admin'] },
-      { label: 'Grade Scale', href: '/app/settings/grade-scale', icon: 'settings', roles: ['admin'] },
-      { label: 'Audit Trail', href: '/app/settings/audit-log', icon: 'clock', roles: ['admin', 'principal'] },
-    ],
-  },
-];
 
 export function AppShell({
   user,
@@ -98,6 +23,7 @@ export function AppShell({
   user: SessionUser;
   children: React.ReactNode;
 }) {
+  const navGroups = getNavGroupsForRole(user.role);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [railCollapsed, setRailCollapsed] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
@@ -249,8 +175,8 @@ export function AppShell({
         </div>
 
         <nav className={styles.navContainer}>
-          {NAV_GROUPS.map((group) => {
-            const visibleItems = group.items.filter((item) => item.roles.includes(user.role));
+          {navGroups.map((group) => {
+            const visibleItems = group.items;
             if (visibleItems.length === 0) return null;
 
             const isGroupActive = visibleItems.some(

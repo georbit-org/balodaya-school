@@ -1,0 +1,238 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.headerActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.loadingState,
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12);
+  gap: var(--space-4);
+  text-align: center;
+  color: var(--ink-muted);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.idCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.idHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.avatarCircle {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--accent-subtle, #e0f2fe);
+  color: var(--accent, #0284c7);
+  font-size: 28px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--border);
+}
+
+.idMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.studentName {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.admNo {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+}
+
+.academicBadge {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--accent, #0284c7);
+}
+
+.quickGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.quickItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quickLabel {
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.quickValue {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.sectionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: var(--space-6);
+}
+
+.panelCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--space-3);
+}
+
+.panelHeader h3 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin: 0;
+}
+
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.emptyText {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.guardianList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.guardianItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3);
+  background: var(--surface-subtle, #f8fafc);
+  border-radius: var(--radius-md);
+}
+
+.guardianName {
+  font-weight: 600;
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.guardianRelation {
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+}
+
+.guardianContact {
+  text-align: right;
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.transportDetails {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--border);
+}
+
+.detailRow span {
+  color: var(--ink-muted);
+}
+
+.miniTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.miniTable th,
+.miniTable td {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.miniTable th {
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+}

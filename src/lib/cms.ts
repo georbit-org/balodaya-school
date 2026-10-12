@@ -73,16 +73,20 @@ export async function getHeroSlides(): Promise<DynamicHeroSlide[]> {
       if (res.ok) {
         const data = await res.json();
         if (data?.docs && data.docs.length > 0) {
-          return data.docs.map((doc: any, idx: number) => ({
-            id: doc.id || `cms-slide-${idx}`,
-            badge: doc.badge || 'Academic Excellence',
-            title: doc.title,
-            subtitle: doc.subtitle || '',
-            image: doc.backgroundImage?.url || doc.imageUrlFallback || FALLBACK_HERO_SLIDES[idx % FALLBACK_HERO_SLIDES.length].image,
-            primaryCtaText: doc.primaryButtonLabel || 'Apply for Admission 2083/84',
-            primaryCtaLink: doc.primaryButtonLink || '/admissions',
-            secondaryCtaText: doc.secondaryButtonLabel || 'Explore Academics',
-            secondaryCtaLink: doc.secondaryButtonLink || '/academics',
+          return (data.docs as Array<Record<string, unknown>>).map((doc, idx: number) => ({
+            id: String(doc.id || `cms-slide-${idx}`),
+            badge: String(doc.badge || 'Academic Excellence'),
+            title: String(doc.title || ''),
+            subtitle: String(doc.subtitle || ''),
+            image: String(
+              (doc.backgroundImage as { url?: string } | undefined)?.url ||
+                doc.imageUrlFallback ||
+                FALLBACK_HERO_SLIDES[idx % FALLBACK_HERO_SLIDES.length].image
+            ),
+            primaryCtaText: String(doc.primaryButtonLabel || 'Apply for Admission 2083/84'),
+            primaryCtaLink: String(doc.primaryButtonLink || '/admissions'),
+            secondaryCtaText: String(doc.secondaryButtonLabel || 'Explore Academics'),
+            secondaryCtaLink: String(doc.secondaryButtonLink || '/academics'),
           }));
         }
       }

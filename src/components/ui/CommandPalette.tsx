@@ -28,12 +28,17 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
     if (!open) {
       setQuery('');
       setSelectedIndex(0);
-      return;
     }
+  }
+
+  useEffect(() => {
+    if (!open) return;
 
     const timer = setTimeout(() => {
       inputRef.current?.focus();
@@ -46,10 +51,10 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     if (!open) return;
 
     let active = true;
-    setLoading(true);
 
     const controller = new AbortController();
     const timer = setTimeout(() => {
+      setLoading(true);
       fetch(`/api/search?q=${encodeURIComponent(query.trim())}`, {
         signal: controller.signal,
       })

@@ -14,81 +14,94 @@ export const GET = handle(async (req: Request) => {
   const pageSize = Math.max(1, parseInt(url.searchParams.get('pageSize') || '25', 10));
   const offset = (page - 1) * pageSize;
 
-  let sql = `
-    SELECT s.id, s.admission_no, s.full_name, s.gender, s.dob, s.address, s.status, s.admitted_on,
-           h.name as house_name,
-           c.name as class_name,
-           sec.name as section_name,
-           e.roll_no,
-           g.name as guardian_name,
-           g.phone as guardian_phone
+  let whereSql = ' WHERE 1=1';
+  const whereArgs: (string | number)[] = [];
+
+  // Role permissions
+  if (user.role === 'parent') {
+    whereSql += ` AND s.id IN (SELECT student_id FROM student_guardians WHERE user_id = ?)`;
+    whereArgs.push(user.id);
+  } else if (user.role === 'student') {
+    whereSql += ` AND s.user_id = ?`;
+    whereArgs.push(user.id);
+  } else if (user.role === 'teacher') {
+    whereSql += ` AND (sec.class_teacher_id = ? OR sec.class_id IN (SELECT class_id FROM class_subjects WHERE teacher_id = ?))`;
+    whereArgs.push(user.id, user.id);
+  }
+
+  if (status) {
+    whereSql += ' AND s.status = ?';
+    whereArgs.push(status);
+  }
+  if (classId) {
+    whereSql += ' AND c.id = ?';
+    whereArgs.push(classId);
+  }
+  if (sectionId) {
+    whereSql += ' AND sec.id = ?';
+    whereArgs.push(sectionId);
+  }
+  if (houseId) {
+    whereSql += ' AND s.house_id = ?';
+    whereArgs.push(houseId);
+  }
+  if (q) {
+    whereSql += ' AND (s.full_name LIKE ? OR s.admission_no LIKE ? OR g.phone LIKE ? OR g.name LIKE ?)';
+    const term = `%${q}%`;
+    whereArgs.push(term, term, term, term);
+  }
+
+  const baseFrom = `
     FROM students s
     LEFT JOIN houses h ON s.house_id = h.id
     LEFT JOIN enrollments e ON e.student_id = s.id
     LEFT JOIN sections sec ON e.section_id = sec.id
     LEFT JOIN classes c ON sec.class_id = c.id
     LEFT JOIN student_guardians g ON g.student_id = s.id AND g.is_primary = 1
-    WHERE 1=1
   `;
-  const args: (string | number)[] = [];
 
-  // Role permissions
-  if (user.role === 'parent') {
-    sql += ` AND s.id IN (SELECT student_id FROM student_guardians WHERE user_id = ?)`;
-    args.push(user.id);
-  } else if (user.role === 'student') {
-    sql += ` AND s.user_id = ?`;
-    args.push(user.id);
-  }
+  const sql = `
+    SELECT DISTINCT s.id, s.admission_no, s.full_name, s.gender, s.dob, s.address, s.status, s.admitted_on,
+           h.name as house_name,
+           c.name as class_name,
+           sec.name as section_name,
+           e.roll_no,
+           g.name as guardian_name,
+           g.phone as guardian_phone
+    ${baseFrom}
+    ${whereSql}
+    ORDER BY s.id DESC
+    LIMIT ? OFFSET ?
+  `;
 
-  if (status) {
-    sql += ' AND s.status = ?';
-    args.push(status);
-  }
-  if (classId) {
-    sql += ' AND c.id = ?';
-    args.push(classId);
-  }
-  if (sectionId) {
-    sql += ' AND sec.id = ?';
-    args.push(sectionId);
-  }
-  if (houseId) {
-    sql += ' AND s.house_id = ?';
-    args.push(houseId);
-  }
-  if (q) {
-    sql += ' AND (s.full_name LIKE ? OR s.admission_no LIKE ? OR g.phone LIKE ? OR g.name LIKE ?)';
-    const term = `%${q}%`;
-    args.push(term, term, term, term);
-  }
+  const items = await query<{
+    id: number;
+    admission_no: string;
+    full_name: string;
+    gender: string | null;
+    dob: string | null;
+    address: string | null;
+    status: string;
+    admitted_on: string | null;
+    house_name: string | null;
+    class_name: string | null;
+    section_name: string | null;
+    roll_no: number | null;
+    guardian_name: string | null;
+    guardian_phone: string | null;
+  }>(sql, [...whereArgs, pageSize, offset]);
 
-  sql += ' ORDER BY s.id DESC LIMIT ? OFFSET ?';
-  args.push(pageSize, offset);
-
-  const items = await query(sql, args);
-
-  // Total count
-  let countSql = 'SELECT count(*) as total FROM students s WHERE 1=1';
-  const countArgs: (string | number)[] = [];
-  if (user.role === 'parent') {
-    countSql += ' AND s.id IN (SELECT student_id FROM student_guardians WHERE user_id = ?)';
-    countArgs.push(user.id);
-  } else if (user.role === 'student') {
-    countSql += ' AND s.user_id = ?';
-    countArgs.push(user.id);
-  }
-  if (status) {
-    countSql += ' AND s.status = ?';
-    countArgs.push(status);
-  }
-  if (q) {
-    countSql += ' AND (s.full_name LIKE ? OR s.admission_no LIKE ?)';
-    const term = `%${q}%`;
-    countArgs.push(term, term);
+  // Strip sensitive PII if user is accountant
+  if (user.role === 'accountant') {
+    for (const item of items) {
+      item.dob = null;
+      item.address = null;
+    }
   }
 
-  const countRow = await one<{ total: number }>(countSql, countArgs);
+  // Count using identical filters
+  const countSql = `SELECT count(DISTINCT s.id) as total ${baseFrom} ${whereSql}`;
+  const countRow = await one<{ total: number }>(countSql, whereArgs);
 
   return json({
     items,

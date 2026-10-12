@@ -16,7 +16,8 @@ export const GET = handle(async (req: Request) => {
     SELECT i.id, i.invoice_no, i.student_id, i.title, i.due_date, i.total, i.created_at,
            s.full_name as student_name, s.admission_no,
            c.name as class_name, sec.name as section_name,
-           COALESCE((SELECT SUM(p.amount) FROM payments p WHERE p.invoice_id = i.id), 0) as paid_amount
+           COALESCE((SELECT SUM(p.amount) FROM payments p WHERE p.invoice_id = i.id), 0) as paid_amount,
+           (SELECT p.id FROM payments p WHERE p.invoice_id = i.id ORDER BY p.id DESC LIMIT 1) as latest_payment_id
     FROM invoices i
     JOIN students s ON i.student_id = s.id
     LEFT JOIN enrollments e ON e.student_id = s.id AND e.academic_year_id = i.academic_year_id
@@ -60,6 +61,7 @@ export const GET = handle(async (req: Request) => {
     due_date: string | null;
     total: number;
     paid_amount: number;
+    latest_payment_id: number | null;
     student_name: string;
     admission_no: string;
     class_name: string | null;

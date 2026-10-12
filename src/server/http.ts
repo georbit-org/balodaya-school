@@ -70,7 +70,7 @@ export function handle<T = unknown>(
 // In-memory rate limiting map: ip -> { count, resetAt }
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
-export function checkRateLimit(req: Request, limit = 10, windowMs = 60_000): boolean {
+export function checkRateLimit(req: Request, limit = process.env.NODE_ENV === 'production' ? 10 : 100, windowMs = 60_000): boolean {
   const forwarded = req.headers.get('x-forwarded-for');
   const ip = forwarded ? forwarded.split(',')[0].trim() : '127.0.0.1';
 

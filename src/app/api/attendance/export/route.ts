@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
-import { requireUser } from '@/server/guard';
+import { requireRole } from '@/server/guard';
 import { query, one } from '@/server/db';
 import { handle, HttpError } from '@/server/http';
+import { todayNPT } from '@/lib/calendar';
 
 export const GET = handle(async (req: Request) => {
-  await requireUser();
+  const user = await requireRole('admin', 'principal', 'teacher');
   const url = new URL(req.url);
   const sectionId = url.searchParams.get('section_id');
-  const month = url.searchParams.get('month') || new Date().toISOString().slice(0, 7);
+  const month = url.searchParams.get('month') || todayNPT().slice(0, 7);
 
   if (!sectionId) throw new HttpError(400, 'section_id is required.');
 

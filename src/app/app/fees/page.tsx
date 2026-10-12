@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Field } from '@/components/ui/Field';
 import { DataTable, Column } from '@/components/ui/DataTable';
+import { Icon } from '@/components/ui/Icon';
+import { useSession } from '@/components/auth/SessionProvider';
+import { formatNpr } from '@/lib/format';
 import styles from './Fees.module.css';
 
 interface InvoiceItem {
@@ -24,6 +27,7 @@ interface InvoiceItem {
   balance: number;
   status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
   created_at: string;
+  latest_payment_id?: number | null;
 }
 
 interface FeeStructureItem {
@@ -49,6 +53,10 @@ interface DueItem {
 }
 
 export default function FeesManagementPage() {
+  const { user, can } = useSession();
+  const isParentOrStudent = user?.role === 'parent' || user?.role === 'student';
+  const isPrincipal = user?.role === 'principal';
+
   const [activeTab, setActiveTab] = useState<'invoices' | 'generate' | 'structure' | 'dues'>('invoices');
 
   // Invoices Tab State
@@ -282,16 +290,16 @@ export default function FeesManagementPage() {
       ),
     },
     { key: 'title', header: 'Description', render: (i: InvoiceItem) => i.title },
-    { key: 'total', header: 'Billed', render: (i: InvoiceItem) => `Rs. ${i.total.toLocaleString()}` },
-    { key: 'paid', header: 'Paid', render: (i: InvoiceItem) => `Rs. ${i.paid_amount.toLocaleString()}` },
+    { key: 'total', header: 'Billed', render: (i: InvoiceItem) => formatNpr(i.total) },
+    { key: 'paid', header: 'Paid', render: (i: InvoiceItem) => formatNpr(i.paid_amount) },
     {
       key: 'balance',
       header: 'Balance',
       render: (i: InvoiceItem) =>
         i.balance > 0 ? (
-          <strong style={{ color: '#c5221f' }}>Rs. {i.balance.toLocaleString()}</strong>
+          <strong style={{ color: '#c5221f' }}>{formatNpr(i.balance)}</strong>
         ) : (
-          <span style={{ color: '#137333' }}>Rs. 0</span>
+          <span style={{ color: '#137333' }}>{formatNpr(0)}</span>
         ),
     },
     { key: 'status', header: 'Status', render: (i: InvoiceItem) => renderStatus(i.status) },
@@ -299,8 +307,8 @@ export default function FeesManagementPage() {
       key: 'actions',
       header: 'Actions',
       render: (i: InvoiceItem) => (
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          {i.balance > 0 && (
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+          {can('fee.record') && i.balance > 0 && (
             <Button
               variant="secondary"
               size="sm"
@@ -318,6 +326,16 @@ export default function FeesManagementPage() {
             >
               Collect
             </Button>
+          )}
+          {i.latest_payment_id && (
+            <Link href={`/app/print/receipt/${i.latest_payment_id}`} target="_blank">
+              <Button variant="secondary" size="sm">
+                Receipt
+              </Button>
+            </Link>
+          )}
+          {!can('fee.record') && i.balance > 0 && !i.latest_payment_id && (
+            <span style={{ fontSize: 'var(--text-xs)', color: '#c5221f', fontWeight: 600 }}>Unsettled</span>
           )}
         </div>
       ),
@@ -338,48 +356,66 @@ export default function FeesManagementPage() {
         </div>
       ),
     },
-    { key: 'billed', header: 'Total Billed', render: (d: DueItem) => `Rs. ${d.total_billed.toLocaleString()}` },
-    { key: 'paid', header: 'Total Paid', render: (d: DueItem) => `Rs. ${d.total_paid.toLocaleString()}` },
+    { key: 'billed', header: 'Total Billed', render: (d: DueItem) => formatNpr(d.total_billed) },
+    { key: 'paid', header: 'Total Paid', render: (d: DueItem) => formatNpr(d.total_paid) },
     {
       key: 'due',
       header: 'Outstanding Due',
-      render: (d: DueItem) => <strong style={{ color: '#c5221f' }}>Rs. {d.balance_due.toLocaleString()}</strong>,
+      render: (d: DueItem) => <strong style={{ color: '#c5221f' }}>{formatNpr(d.balance_due)}</strong>,
     },
   ];
+
+  const pageTitle = user?.role === 'student'
+    ? 'My Fee Invoices & Receipts'
+    : user?.role === 'parent'
+    ? "Children's Fee Invoices & Receipts"
+    : 'Fee Management & Accounts';
+
+  const pageDescription = user?.role === 'student'
+    ? 'Review your fee billing records, check payment balances, and view/print official receipts.'
+    : user?.role === 'parent'
+    ? 'Review billing records and download official payment receipts for your children.'
+    : 'Fee structures, monthly billing generation, receipt printing, and dues reporting.';
 
   return (
     <div>
       <PageHeader
-        title="Fee Management & Accounts"
-        description="Fee structures, monthly billing generation, receipt printing, and dues reporting."
+        title={pageTitle}
+        description={pageDescription}
       />
 
-      <div className={styles.topTabs}>
-        <button
-          className={`${styles.tabBtn} ${activeTab === 'invoices' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('invoices')}
-        >
-          Invoices Ledger
-        </button>
-        <button
-          className={`${styles.tabBtn} ${activeTab === 'generate' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('generate')}
-        >
-          Generate Invoices
-        </button>
-        <button
-          className={`${styles.tabBtn} ${activeTab === 'structure' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('structure')}
-        >
-          Fee Structure
-        </button>
-        <button
-          className={`${styles.tabBtn} ${activeTab === 'dues' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('dues')}
-        >
-          Dues Report
-        </button>
-      </div>
+      {!isParentOrStudent && (
+        <div className={styles.topTabs}>
+          <button
+            className={`${styles.tabBtn} ${activeTab === 'invoices' ? styles.tabBtnActive : ''}`}
+            onClick={() => setActiveTab('invoices')}
+          >
+            Invoices Ledger
+          </button>
+          {!isPrincipal && (
+            <>
+              <button
+                className={`${styles.tabBtn} ${activeTab === 'generate' ? styles.tabBtnActive : ''}`}
+                onClick={() => setActiveTab('generate')}
+              >
+                Generate Invoices
+              </button>
+              <button
+                className={`${styles.tabBtn} ${activeTab === 'structure' ? styles.tabBtnActive : ''}`}
+                onClick={() => setActiveTab('structure')}
+              >
+                Fee Structure
+              </button>
+            </>
+          )}
+          <button
+            className={`${styles.tabBtn} ${activeTab === 'dues' ? styles.tabBtnActive : ''}`}
+            onClick={() => setActiveTab('dues')}
+          >
+            Dues Report
+          </button>
+        </div>
+      )}
 
       {/* Tab 1: Invoices Ledger */}
       {activeTab === 'invoices' && (
@@ -387,18 +423,18 @@ export default function FeesManagementPage() {
           <div className={styles.summaryCardsRow}>
             <div className={styles.summaryCard}>
               <div className={styles.summaryLabel}>Total Billed</div>
-              <div className={styles.summaryValue}>Rs. {totals.billed.toLocaleString()}</div>
+              <div className={styles.summaryValue}>{formatNpr(totals.billed)}</div>
             </div>
             <div className={styles.summaryCard}>
-              <div className={styles.summaryLabel}>Total Collected</div>
+              <div className={styles.summaryLabel}>Total Paid</div>
               <div className={styles.summaryValue} style={{ color: '#137333' }}>
-                Rs. {totals.paid.toLocaleString()}
+                {formatNpr(totals.paid)}
               </div>
             </div>
             <div className={styles.summaryCard}>
               <div className={styles.summaryLabel}>Outstanding Dues</div>
               <div className={styles.summaryValue} style={{ color: '#c5221f' }}>
-                Rs. {totals.balance.toLocaleString()}
+                {formatNpr(totals.balance)}
               </div>
             </div>
           </div>
@@ -406,24 +442,26 @@ export default function FeesManagementPage() {
           <div className={styles.filterBar}>
             <input
               type="text"
-              placeholder="Search by student name, admission no, or invoice no..."
+              placeholder={isParentOrStudent ? 'Search invoices...' : 'Search by student name, admission no, or invoice no...'}
               className={styles.searchInput}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
 
-            <select
-              className={styles.selectInput}
-              value={classFilter}
-              onChange={(e) => setClassFilter(e.target.value)}
-            >
-              <option value="">All Classes</option>
-              {classes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            {!isParentOrStudent && (
+              <select
+                className={styles.selectInput}
+                value={classFilter}
+                onChange={(e) => setClassFilter(e.target.value)}
+              >
+                <option value="">All Classes</option>
+                {classes.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            )}
 
             <select
               className={styles.selectInput}
@@ -605,8 +643,9 @@ export default function FeesManagementPage() {
           <div>
             {recentReceiptId ? (
               <div style={{ textAlign: 'center', padding: 'var(--space-4)' }}>
-                <div style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: '#137333', marginBottom: 'var(--space-2)' }}>
-                  ✓ Payment Received Successfully
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: 'var(--text-lg)', fontWeight: 700, color: '#137333', marginBottom: 'var(--space-2)' }}>
+                  <Icon name="check-circle" size={20} />
+                  <span>Payment Received Successfully</span>
                 </div>
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-muted)', marginBottom: 'var(--space-4)' }}>
                   Receipt recorded for {paymentInvoice.student_name}.

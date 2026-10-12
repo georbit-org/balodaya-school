@@ -125,7 +125,7 @@ export function DataTable<T extends object>({
   };
 
   // Client-side sorting fallback when no server onSort is provided
-  let displayedRows = [...rows];
+  const displayedRows = [...rows];
   if (!onSort && sortCol) {
     displayedRows.sort((a, b) => {
       const valA = (a as Record<string, unknown>)[sortCol];
@@ -297,6 +297,16 @@ export function DataTable<T extends object>({
           </tbody>
         </table>
       </div>
+
+      {renderCard && displayedRows.length > 0 && (
+        <div className={styles.mobileCardView}>
+          {displayedRows.map((row, idx) => (
+            <div key={getRowKey(row, idx)} className={styles.mobileCardItem}>
+              {renderCard(row)}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Pagination Footer */}
       {total !== undefined && pageSize !== undefined && page !== undefined && total > pageSize && (

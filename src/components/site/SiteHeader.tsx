@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { SCHOOL_INFO } from '@/content/school';
 import { MAIN_NAV, MORE_NAV } from '@/content/nav';
 import { Button } from '@/components/ui/Button';
+import { Icon } from '@/components/ui/Icon';
 import styles from './SiteHeader.module.css';
 
 export function SiteHeader() {
@@ -15,11 +16,12 @@ export function SiteHeader() {
   const pathname = usePathname();
   const moreRef = useRef<HTMLLIElement>(null);
 
-  // Close menus when route changes
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setMobileOpen(false);
     setMoreOpen(false);
-  }, [pathname]);
+  }
 
   // Click outside listener for "More" dropdown
   useEffect(() => {
@@ -124,7 +126,7 @@ export function SiteHeader() {
             aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={mobileOpen}
           >
-            {mobileOpen ? '✕' : '☰'}
+            {mobileOpen ? <Icon name="x" size={20} /> : <Icon name="menu" size={20} />}
           </button>
         </div>
       </div>

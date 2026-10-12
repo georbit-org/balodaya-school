@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Field } from '@/components/ui/Field';
 import { DataTable, Column } from '@/components/ui/DataTable';
+import { Icon } from '@/components/ui/Icon';
+import { useSession } from '@/components/auth/SessionProvider';
 import styles from './Notices.module.css';
 
 interface NoticeItem {
@@ -22,10 +24,18 @@ interface NoticeItem {
 }
 
 export default function NoticesManagementPage() {
+  const { user, can } = useSession();
+  const canCreate = can('notice.create_scope') || can('notice.create_all');
+  const isTeacher = user?.role === 'teacher';
+  const isAdminOrPrincipal = user?.role === 'admin' || user?.role === 'principal';
+
   const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [kindFilter, setKindFilter] = useState('');
   const [audienceFilter, setAudienceFilter] = useState('');
+
+  // Read Notice Dialog State
+  const [readNotice, setReadNotice] = useState<NoticeItem | null>(null);
 
   // Dialog State
   const [isOpen, setIsOpen] = useState(false);
@@ -33,8 +43,8 @@ export default function NoticesManagementPage() {
   const [form, setForm] = useState({
     title: '',
     body: '',
-    kind: 'notice',
-    audience: 'public',
+    kind: 'notice' as 'notice' | 'event',
+    audience: 'public' as 'public' | 'staff' | 'parents' | 'students',
     event_date: '',
     published: true,
   });
@@ -144,7 +154,12 @@ export default function NoticesManagementPage() {
       header: 'Title',
       render: (item: NoticeItem) => (
         <div>
-          <strong>{item.title}</strong>
+          <strong
+            style={{ cursor: 'pointer', color: 'var(--primary, #094067)' }}
+            onClick={() => setReadNotice(item)}
+          >
+            {item.title}
+          </strong>
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-muted)' }}>
             Posted on {item.created_at.slice(0, 10)} {item.author_name ? `by ${item.author_name}` : ''}
           </div>
@@ -161,40 +176,57 @@ export default function NoticesManagementPage() {
           <span className={styles.badgeNotice}>Notice</span>
         ),
     },
-    {
-      key: 'audience',
-      header: 'Audience',
-      render: (item: NoticeItem) => <span className={styles.badgeAudience}>{item.audience}</span>,
-    },
+    ...(isAdminOrPrincipal
+      ? [
+          {
+            key: 'audience',
+            header: 'Audience',
+            render: (item: NoticeItem) => <span className={styles.badgeAudience}>{item.audience}</span>,
+          },
+        ]
+      : []),
     {
       key: 'event_date',
       header: 'Event Date',
       render: (item: NoticeItem) => item.event_date || '—',
     },
-    {
-      key: 'status',
-      header: 'Status',
-      render: (item: NoticeItem) =>
-        item.published ? (
-          <span className={styles.badgePublished}>Published</span>
-        ) : (
-          <span className={styles.badgeDraft}>Draft</span>
-        ),
-    },
+    ...(isAdminOrPrincipal || isTeacher
+      ? [
+          {
+            key: 'status',
+            header: 'Status',
+            render: (item: NoticeItem) =>
+              item.published ? (
+                <span className={styles.badgePublished}>Published</span>
+              ) : (
+                <span className={styles.badgeDraft}>Draft</span>
+              ),
+          },
+        ]
+      : []),
     {
       key: 'actions',
       header: 'Actions',
       render: (item: NoticeItem) => (
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <Button variant="secondary" size="sm" onClick={() => handleOpenEdit(item)}>
-            Edit
+          <Button variant="secondary" size="sm" onClick={() => setReadNotice(item)}>
+            Read
           </Button>
-          <Button variant="secondary" size="sm" onClick={() => handleTogglePublish(item)}>
-            {item.published ? 'Unpublish' : 'Publish'}
-          </Button>
-          <Button variant="secondary" size="sm" onClick={() => handleDelete(item.id)}>
-            Delete
-          </Button>
+          {canCreate && (isAdminOrPrincipal || item.author_name === user?.name) && (
+            <Button variant="secondary" size="sm" onClick={() => handleOpenEdit(item)}>
+              Edit
+            </Button>
+          )}
+          {isAdminOrPrincipal && (
+            <>
+              <Button variant="secondary" size="sm" onClick={() => handleTogglePublish(item)}>
+                {item.published ? 'Unpublish' : 'Publish'}
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => handleDelete(item.id)}>
+                Delete
+              </Button>
+            </>
+          )}
         </div>
       ),
     },
@@ -206,9 +238,11 @@ export default function NoticesManagementPage() {
         title="Notice Board & Circulars"
         description="Institutional announcements, academic calendar events, and audience-targeted circulars."
         actions={
-          <Button variant="primary" onClick={handleOpenCreate}>
-            + Post New Notice
-          </Button>
+          canCreate ? (
+            <Button variant="primary" onClick={handleOpenCreate}>
+              + Post New Notice
+            </Button>
+          ) : undefined
         }
       />
 
@@ -223,17 +257,19 @@ export default function NoticesManagementPage() {
           <option value="event">Events Only</option>
         </select>
 
-        <select
-          className={styles.selectInput}
-          value={audienceFilter}
-          onChange={(e) => setAudienceFilter(e.target.value)}
-        >
-          <option value="">All Audiences</option>
-          <option value="public">Public</option>
-          <option value="staff">Staff Only</option>
-          <option value="parents">Parents Only</option>
-          <option value="students">Students Only</option>
-        </select>
+        {isAdminOrPrincipal && (
+          <select
+            className={styles.selectInput}
+            value={audienceFilter}
+            onChange={(e) => setAudienceFilter(e.target.value)}
+          >
+            <option value="">All Audiences</option>
+            <option value="public">Public</option>
+            <option value="staff">Staff Only</option>
+            <option value="parents">Parents Only</option>
+            <option value="students">Students Only</option>
+          </select>
+        )}
       </div>
 
       <DataTable<NoticeItem>
@@ -243,6 +279,49 @@ export default function NoticesManagementPage() {
         loading={loading}
         emptyText="No notices found."
       />
+
+      {/* Read Notice Modal */}
+      <Dialog
+        open={readNotice !== null}
+        onClose={() => setReadNotice(null)}
+        title={readNotice?.title || 'Notice Details'}
+      >
+        {readNotice && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+              <span className={readNotice.kind === 'event' ? styles.badgeEvent : styles.badgeNotice}>
+                {readNotice.kind === 'event' ? 'Calendar Event' : 'Notice'}
+              </span>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-muted)' }}>
+                Posted on {readNotice.created_at.slice(0, 10)} {readNotice.author_name ? `by ${readNotice.author_name}` : ''}
+              </span>
+            </div>
+
+            {readNotice.event_date && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: 'var(--space-2) var(--space-3)', background: 'var(--surface-alt)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--text-sm)' }}>
+                <Icon name="calendar" size={14} />
+                <span><strong>Scheduled Date:</strong> {readNotice.event_date}</span>
+              </div>
+            )}
+
+            <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, color: 'var(--ink)' }}>
+              {readNotice.body}
+            </div>
+
+            {readNotice.attachment_path && (
+              <div style={{ marginTop: 'var(--space-2)' }}>
+                <a href={readNotice.attachment_path} target="_blank" rel="noopener noreferrer">
+                  <Button variant="secondary" size="sm">Download Attachment</Button>
+                </a>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-2)' }}>
+              <Button variant="secondary" onClick={() => setReadNotice(null)}>Close</Button>
+            </div>
+          </div>
+        )}
+      </Dialog>
 
       {/* Create / Edit Dialog */}
       <Dialog

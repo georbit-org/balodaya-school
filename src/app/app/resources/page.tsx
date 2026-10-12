@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Field } from '@/components/ui/Field';
 import { DataTable, Column } from '@/components/ui/DataTable';
+import { useSession } from '@/components/auth/SessionProvider';
 import styles from './Resources.module.css';
 
 interface ResourceItem {
@@ -33,6 +34,9 @@ interface SubjectOption {
 }
 
 export default function ResourcesManagementPage() {
+  const { can } = useSession();
+  const canManage = can('resource.manage');
+
   const [resources, setResources] = useState<ResourceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeKind, setActiveKind] = useState<string>('all');
@@ -196,19 +200,23 @@ export default function ResourcesManagementPage() {
         </span>
       ),
     },
-    {
-      key: 'published',
-      label: 'Status',
-      render: (r) => (
-        <span className={r.published ? styles.pubTag : styles.unpubTag}>
-          {r.published ? 'Published' : 'Draft / Hidden'}
-        </span>
-      ),
-    },
+    ...(canManage
+      ? [
+          {
+            key: 'published',
+            label: 'Status',
+            render: (r: ResourceItem) => (
+              <span className={r.published ? styles.pubTag : styles.unpubTag}>
+                {r.published ? 'Published' : 'Draft / Hidden'}
+              </span>
+            ),
+          },
+        ]
+      : []),
     {
       key: 'created_at',
       label: 'Uploaded',
-      render: (r) => (
+      render: (r: ResourceItem) => (
         <div>
           <div>{r.created_at ? r.created_at.slice(0, 10) : '—'}</div>
           <small style={{ color: 'var(--ink-soft)' }}>By {r.uploaded_by_name || 'Staff'}</small>
@@ -218,7 +226,7 @@ export default function ResourcesManagementPage() {
     {
       key: 'id',
       label: 'Actions',
-      render: (r) => (
+      render: (r: ResourceItem) => (
         <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
           <a
             href={`/api/resources/${r.id}/download`}
@@ -231,20 +239,24 @@ export default function ResourcesManagementPage() {
               Download
             </Button>
           </a>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => handleTogglePublish(r)}
-          >
-            {r.published ? 'Unpublish' : 'Publish'}
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => handleDelete(r.id)}
-          >
-            Delete
-          </Button>
+          {canManage && (
+            <>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => handleTogglePublish(r)}
+              >
+                {r.published ? 'Unpublish' : 'Publish'}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => handleDelete(r.id)}
+              >
+                Delete
+              </Button>
+            </>
+          )}
         </div>
       ),
     },
@@ -254,17 +266,23 @@ export default function ResourcesManagementPage() {
     <div className={styles.container}>
       <PageHeader
         title="Resources & Document Repository"
-        description="Past question papers, examination portions, academic syllabi, and official institutional policies."
+        description={
+          canManage
+            ? 'Past question papers, examination portions, academic syllabi, and official institutional policies.'
+            : 'Download syllabus documents, question banks, exam portions, and official school policies.'
+        }
         actions={
-          <Button
-            variant="primary"
-            onClick={() => {
-              setFormError('');
-              setIsDialogOpen(true);
-            }}
-          >
-            + Upload / Add Resource
-          </Button>
+          canManage ? (
+            <Button
+              variant="primary"
+              onClick={() => {
+                setFormError('');
+                setIsDialogOpen(true);
+              }}
+            >
+              + Upload / Add Resource
+            </Button>
+          ) : undefined
         }
       />
 

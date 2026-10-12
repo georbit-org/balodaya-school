@@ -372,9 +372,291 @@ CREATE TABLE IF NOT EXISTS hero_slides (
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS school_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_by INTEGER,
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS settings_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  key TEXT NOT NULL,
+  old_value TEXT,
+  new_value TEXT NOT NULL,
+  changed_by INTEGER,
+  reason TEXT,
+  effective_from TEXT,
+  changed_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS school_calendar (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  academic_year_id INTEGER NOT NULL REFERENCES academic_years(id),
+  date TEXT NOT NULL,
+  end_date TEXT,
+  kind TEXT NOT NULL CHECK (kind IN ('holiday','vacation','exam_day','event','half_day','working_override')),
+  title TEXT NOT NULL,
+  title_ne TEXT,
+  applies_to TEXT NOT NULL DEFAULT 'all' CHECK (applies_to IN ('all','students','staff')),
+  created_by INTEGER REFERENCES users(id),
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS attendance_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  attendance_id INTEGER NOT NULL REFERENCES attendance(id),
+  old_status TEXT,
+  new_status TEXT NOT NULL,
+  old_note TEXT,
+  new_note TEXT,
+  changed_by INTEGER NOT NULL REFERENCES users(id),
+  reason TEXT NOT NULL,
+  changed_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS staff_attendance (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  date TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('present','absent','late','leave','half_day','on_duty')),
+  check_in TEXT,
+  check_out TEXT,
+  note TEXT,
+  marked_by INTEGER REFERENCES users(id),
+  UNIQUE(user_id, date)
+);
+
+CREATE TABLE IF NOT EXISTS leave_types (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  code TEXT UNIQUE,
+  name TEXT NOT NULL,
+  name_ne TEXT,
+  audience TEXT CHECK (audience IN ('student','staff','both')),
+  annual_quota REAL,
+  requires_attachment_after_days INTEGER DEFAULT 2,
+  paid INTEGER DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS staff_leave_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  leave_type_id INTEGER NOT NULL REFERENCES leave_types(id),
+  from_date TEXT NOT NULL,
+  to_date TEXT NOT NULL,
+  half_day INTEGER DEFAULT 0,
+  working_days REAL NOT NULL,
+  reason TEXT NOT NULL,
+  attachment_url TEXT,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected','cancelled','info_requested')),
+  approver_id INTEGER REFERENCES users(id),
+  reviewed_by INTEGER REFERENCES users(id),
+  reviewed_at TEXT,
+  review_note TEXT,
+  substitute_user_id INTEGER REFERENCES users(id),
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS staff_leave_balances (
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  leave_type_id INTEGER NOT NULL REFERENCES leave_types(id),
+  academic_year_id INTEGER NOT NULL REFERENCES academic_years(id),
+  allocated REAL DEFAULT 0,
+  used REAL DEFAULT 0,
+  PRIMARY KEY (user_id, leave_type_id, academic_year_id)
+);
+
+CREATE TABLE IF NOT EXISTS leave_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  request_kind TEXT NOT NULL,
+  request_id INTEGER NOT NULL,
+  actor_id INTEGER NOT NULL REFERENCES users(id),
+  action TEXT NOT NULL,
+  note TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS approval_workflows (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  applies_to TEXT NOT NULL,
+  applicant_role TEXT NOT NULL,
+  active INTEGER DEFAULT 1,
+  version INTEGER DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS approval_steps (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  workflow_id INTEGER NOT NULL REFERENCES approval_workflows(id),
+  step_no INTEGER NOT NULL,
+  approver_kind TEXT NOT NULL CHECK (approver_kind IN ('class_teacher','role','user')),
+  approver_value TEXT NOT NULL,
+  escalate_after_hours INTEGER DEFAULT 48,
+  can_skip_if_unavailable INTEGER DEFAULT 1
+);
+
 CREATE INDEX IF NOT EXISTS idx_attendance_date ON attendance(date);
 CREATE INDEX IF NOT EXISTS idx_marks_exam ON marks(exam_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_student ON invoices(student_id);
 CREATE INDEX IF NOT EXISTS idx_payments_invoice ON payments(invoice_id);
 CREATE INDEX IF NOT EXISTS idx_enroll_section ON enrollments(section_id, academic_year_id);
 CREATE INDEX IF NOT EXISTS idx_hero_slides_order ON hero_slides(is_active, display_order);
+CREATE INDEX IF NOT EXISTS idx_calendar_date ON school_calendar(date);
+CREATE INDEX IF NOT EXISTS idx_staff_att_date ON staff_attendance(date);
+CREATE INDEX IF NOT EXISTS idx_staff_leave_status ON staff_leave_requests(status);
+CREATE INDEX IF NOT EXISTS idx_leave_req_status ON leave_requests(status);
+
+-- =========================================================================
+-- TOTAL ADMIN CONTROL & CONTENT MANAGEMENT SYSTEM (CMS)
+-- =========================================================================
+
+CREATE TABLE IF NOT EXISTS media (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  file_path TEXT NOT NULL,
+  original_name TEXT,
+  mime TEXT NOT NULL,
+  size_bytes INTEGER NOT NULL,
+  width INTEGER,
+  height INTEGER,
+  alt_text TEXT NOT NULL,
+  alt_text_ne TEXT,
+  caption TEXT,
+  folder TEXT DEFAULT 'general',
+  tags TEXT,
+  focal_x REAL DEFAULT 0.5,
+  focal_y REAL DEFAULT 0.5,
+  visibility TEXT NOT NULL DEFAULT 'public' CHECK (visibility IN ('public','private')),
+  uploaded_by INTEGER REFERENCES users(id),
+  created_at TEXT DEFAULT (datetime('now')),
+  deleted_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS cms_pages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  title_ne TEXT,
+  seo_title TEXT,
+  seo_description TEXT,
+  seo_image_media_id INTEGER REFERENCES media(id),
+  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','published','archived')),
+  show_in_nav INTEGER DEFAULT 0,
+  nav_label TEXT,
+  nav_label_ne TEXT,
+  nav_order INTEGER DEFAULT 100,
+  nav_parent_id INTEGER,
+  is_system INTEGER DEFAULT 0,
+  published_version_id INTEGER,
+  updated_by INTEGER REFERENCES users(id),
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS cms_sections (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  page_id INTEGER NOT NULL REFERENCES cms_pages(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  visible INTEGER NOT NULL DEFAULT 1,
+  data TEXT NOT NULL,
+  schedule_from TEXT,
+  schedule_to TEXT
+);
+
+CREATE TABLE IF NOT EXISTS cms_versions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  page_id INTEGER NOT NULL REFERENCES cms_pages(id) ON DELETE CASCADE,
+  snapshot TEXT NOT NULL,
+  note TEXT,
+  created_by INTEGER REFERENCES users(id),
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS site_menu (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  zone TEXT NOT NULL CHECK (zone IN ('header','more','footer1','footer2','mobile')),
+  label TEXT NOT NULL,
+  label_ne TEXT,
+  href TEXT NOT NULL,
+  page_id INTEGER REFERENCES cms_pages(id),
+  sort_order INTEGER DEFAULT 0,
+  visible INTEGER DEFAULT 1,
+  open_new_tab INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS redirects (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  from_path TEXT NOT NULL UNIQUE,
+  to_path TEXT NOT NULL,
+  permanent INTEGER DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS labels (
+  key TEXT PRIMARY KEY,
+  en TEXT NOT NULL,
+  ne TEXT,
+  group_name TEXT
+);
+
+CREATE TABLE IF NOT EXISTS templates (
+  key TEXT PRIMARY KEY,
+  kind TEXT NOT NULL,
+  subject TEXT,
+  body_en TEXT NOT NULL,
+  body_ne TEXT,
+  updated_by INTEGER REFERENCES users(id),
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS lookups (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  kind TEXT NOT NULL,
+  code TEXT NOT NULL,
+  label TEXT NOT NULL,
+  label_ne TEXT,
+  sort_order INTEGER DEFAULT 0,
+  active INTEGER DEFAULT 1,
+  UNIQUE(kind, code)
+);
+
+CREATE TABLE IF NOT EXISTS custom_fields (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  entity TEXT NOT NULL,
+  key TEXT NOT NULL,
+  label TEXT NOT NULL,
+  label_ne TEXT,
+  type TEXT NOT NULL,
+  options TEXT,
+  required INTEGER DEFAULT 0,
+  visible_roles TEXT,
+  sort_order INTEGER DEFAULT 0,
+  active INTEGER DEFAULT 1,
+  UNIQUE(entity, key)
+);
+
+CREATE TABLE IF NOT EXISTS custom_values (
+  field_id INTEGER NOT NULL REFERENCES custom_fields(id) ON DELETE CASCADE,
+  entity_id INTEGER NOT NULL,
+  value TEXT,
+  PRIMARY KEY (field_id, entity_id)
+);
+
+CREATE TABLE IF NOT EXISTS role_permission_overrides (
+  role TEXT NOT NULL,
+  action TEXT NOT NULL,
+  allowed INTEGER NOT NULL,
+  reason TEXT,
+  changed_by INTEGER REFERENCES users(id),
+  changed_at TEXT DEFAULT (datetime('now')),
+  PRIMARY KEY (role, action)
+);
+
+CREATE TABLE IF NOT EXISTS feature_flags (
+  key TEXT PRIMARY KEY,
+  enabled INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX IF NOT EXISTS idx_media_visibility ON media(visibility);
+CREATE INDEX IF NOT EXISTS idx_cms_pages_slug ON cms_pages(slug);
+CREATE INDEX IF NOT EXISTS idx_cms_sections_page ON cms_sections(page_id, sort_order);
+CREATE INDEX IF NOT EXISTS idx_site_menu_zone ON site_menu(zone, sort_order);
+
+

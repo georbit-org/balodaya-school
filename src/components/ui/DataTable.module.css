@@ -305,3 +305,25 @@
   padding: 0 8px;
   font-variant-numeric: tabular-nums;
 }
+
+.mobileCardView {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .mobileCardView {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .mobileCardItem {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    box-shadow: var(--shadow-1);
+  }
+}
+

@@ -3,7 +3,13 @@ import { query, one, run } from '@/server/db';
 import { handle, json, HttpError } from '@/server/http';
 
 export const GET = handle(async (req: Request, context?: { params: Promise<{ id: string }> }) => {
-  await requireUser();
+  const user = await requireUser();
+
+  // Strict role check: students and parents MUST NOT view class marks sheets
+  if (user.role === 'student' || user.role === 'parent') {
+    throw new HttpError(403, 'Permission denied. Students and parents cannot access class marks entry sheets.');
+  }
+
   const params = await context?.params;
   const examId = parseInt(params?.id || '', 10);
   if (isNaN(examId)) throw new HttpError(400, 'Invalid exam ID.');
@@ -28,8 +34,9 @@ export const GET = handle(async (req: Request, context?: { params: Promise<{ id:
     name: string;
     full_marks: number;
     pass_marks: number;
+    teacher_id: number | null;
   }>(
-    `SELECT s.id, s.name, cs.full_marks, cs.pass_marks
+    `SELECT s.id, s.name, cs.full_marks, cs.pass_marks, cs.teacher_id
      FROM subjects s
      JOIN class_subjects cs ON cs.subject_id = s.id
      WHERE s.id = ? AND cs.class_id = ?`,
@@ -38,6 +45,13 @@ export const GET = handle(async (req: Request, context?: { params: Promise<{ id:
 
   if (!subject) {
     throw new HttpError(404, 'Subject assignment not found for this class.');
+  }
+
+  // Teacher scoping check
+  if (user.role === 'teacher') {
+    if (subject.teacher_id !== user.id && section.class_teacher_id !== user.id) {
+      throw new HttpError(403, 'You are not assigned to view or enter marks for this subject/section.');
+    }
   }
 
   const currentYear = await one<{ id: number }>('SELECT id FROM academic_years WHERE is_current = 1');
@@ -51,9 +65,10 @@ export const GET = handle(async (req: Request, context?: { params: Promise<{ id:
     full_name: string;
     roll_no: number | null;
     marks: number | null;
+    is_absent: number | null;
   }>(
     `SELECT e.id as enrollment_id, s.id as student_id, s.admission_no, s.full_name, e.roll_no,
-            m.marks
+            m.marks, m.is_absent
      FROM enrollments e
      JOIN students s ON e.student_id = s.id
      LEFT JOIN marks m ON m.enrollment_id = e.id AND m.exam_id = ? AND m.subject_id = ?
@@ -72,9 +87,28 @@ export const GET = handle(async (req: Request, context?: { params: Promise<{ id:
 
 export const POST = handle(async (req: Request, context?: { params: Promise<{ id: string }> }) => {
   const user = await requireUser();
+
+  // Strict role check: Parents and students NEVER enter marks
+  if (user.role === 'student' || user.role === 'parent' || user.role === 'accountant') {
+    throw new HttpError(403, 'Permission denied. You cannot enter examination marks.');
+  }
+
   const params = await context?.params;
   const examId = parseInt(params?.id || '', 10);
   if (isNaN(examId)) throw new HttpError(400, 'Invalid exam ID.');
+
+  const exam = await one<{ id: number; status: string | null; published: number }>(
+    'SELECT id, status, published FROM exams WHERE id = ?',
+    [examId]
+  );
+  if (!exam) throw new HttpError(404, 'Exam not found.');
+
+  // Teacher cannot modify locked or published marks
+  if (user.role === 'teacher') {
+    if (exam.status === 'locked' || exam.status === 'published' || exam.published === 1) {
+      throw new HttpError(403, 'Marks entry is locked or already published for this examination. Contact the Principal.');
+    }
+  }
 
   const body = await req.json().catch(() => ({}));
   const { section_id, subject_id, marks } = body;
@@ -100,31 +134,37 @@ export const POST = handle(async (req: Request, context?: { params: Promise<{ id
     if (subjectRule.teacher_id !== user.id && section.class_teacher_id !== user.id) {
       throw new HttpError(403, 'You are not assigned to enter marks for this subject.');
     }
-  } else if (user.role !== 'admin' && user.role !== 'principal') {
-    throw new HttpError(403, 'Permission denied.');
   }
 
   const maxMarks = subjectRule.full_marks;
 
   for (const item of marks) {
-    const { enrollment_id, marks: val } = item;
+    const { enrollment_id, marks: val, is_absent: markAbsent } = item;
     if (!enrollment_id) continue;
 
     let score: number | null = null;
-    if (val !== null && val !== undefined && val !== '') {
+    let isAbsent = markAbsent ? 1 : 0;
+
+    if (val === 'AB' || val === 'ab' || markAbsent) {
+      score = null;
+      isAbsent = 1;
+    } else if (val !== null && val !== undefined && val !== '') {
       score = Number(val);
       if (isNaN(score) || score < 0 || score > maxMarks) {
         throw new HttpError(400, `Marks must be between 0 and ${maxMarks}. Received: ${val}`);
       }
+      isAbsent = 0;
     }
 
     await run(
-      `INSERT INTO marks (exam_id, enrollment_id, subject_id, marks, entered_by)
-       VALUES (?, ?, ?, ?, ?)
+      `INSERT INTO marks (exam_id, enrollment_id, subject_id, marks, is_absent, entered_by, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
        ON CONFLICT(exam_id, enrollment_id, subject_id) DO UPDATE SET
          marks = excluded.marks,
-         entered_by = excluded.entered_by`,
-      [examId, enrollment_id, subject_id, score, user.id]
+         is_absent = excluded.is_absent,
+         entered_by = excluded.entered_by,
+         updated_at = excluded.updated_at`,
+      [examId, enrollment_id, subject_id, score, isAbsent, user.id]
     );
   }
 

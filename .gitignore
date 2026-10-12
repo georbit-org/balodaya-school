@@ -49,6 +49,8 @@ next-env.d.ts
 /data/*.db-wal
 /data/*.db-shm
 !/data/.gitkeep
+/data/backups/*
+!/data/backups/.gitkeep
 /public/uploads/*
 !/public/uploads/.gitkeep
 

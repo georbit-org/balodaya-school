@@ -1,6 +1,9 @@
 import { query, one } from '@/server/db';
 import { SessionUser } from '@/server/session';
 import { getRecentAudit } from '@/server/audit';
+import { todayNPT, dayOfWeek, addDays, isWorkingDay, toBS } from '@/lib/calendar';
+import { getCalendarContext } from '@/server/services/calendar';
+import { getSetting } from '@/server/settings';
 
 export interface DashboardResponse {
   role: SessionUser['role'];
@@ -8,6 +11,15 @@ export interface DashboardResponse {
     id: number;
     name: string;
     email: string;
+  };
+  school_identity?: {
+    name: string;
+    address: string;
+  };
+  today_date_display?: {
+    bsEn: string;
+    bsNe: string;
+    adStr: string;
   };
   stats?: Record<string, number | string>;
   needsAttention?: Array<{
@@ -29,12 +41,50 @@ export interface DashboardResponse {
   }>;
   upcoming_exams?: Array<{ id: number; name: string; start_date: string; end_date: string }>;
   latest_notices?: Array<{ id: number; title: string; kind?: string; created_at?: string; published_on?: string }>;
+  sections_attendance_pending?: Array<{
+    id: number;
+    class_name: string;
+    section_name: string;
+    teacher_name: string | null;
+  }>;
+  staff_on_leave_today_list?: Array<{
+    name: string;
+    role: string;
+    reason: string;
+    leave_type: string | null;
+  }>;
+  fee_collected_today?: number;
+  upcoming_holidays?: Array<{
+    id: number;
+    date: string;
+    title: string;
+    title_ne: string | null;
+    kind: string;
+  }>;
   // Role specific extra properties
   my_sections?: Array<{ section_id: number; class_name: string; section_name: string; marked_today: number }>;
-  timetable_today?: Array<{ period: number; start_time: string; end_time: string; class_name: string; section_name: string; subject_name: string }>;
+  timetable_today?: Array<{
+    period: number;
+    start_time: string;
+    end_time: string;
+    class_name?: string;
+    section_name?: string;
+    subject_name: string;
+    teacher_name?: string | null;
+  }>;
   leave_requests?: Array<{ id: number; student_name: string; class_name: string; reason: string; from_date: string; to_date: string }>;
   attendance_month?: { present: number; absent: number; late: number; percent: number };
-  children?: Array<{ student_id: number; full_name: string; admission_no: string; class_name: string; section_name: string; balance_due: number; attendance_percent: number }>;
+  children?: Array<{
+    id?: number;
+    student_id: number;
+    full_name: string;
+    admission_no: string;
+    class_name: string;
+    section_name: string;
+    balance_due: number;
+    fees_due?: number;
+    attendance_percent: number | null;
+  }>;
   selected_child?: {
     student_id: number;
     full_name: string;
@@ -49,15 +99,23 @@ export interface DashboardResponse {
   my_timetable?: Array<{ period: number; start_time: string; end_time: string; subject_name: string }>;
   my_house?: { name: string; points: number };
   pending_leaves_count?: number;
-  recent_payments?: any[];
-  student?: any;
+  recent_payments?: Array<{
+    id: number;
+    receipt_no: string;
+    student_name: string;
+    admission_no: string;
+    amount: number;
+    method: string;
+    paid_on: string;
+  }>;
+  student?: Record<string, unknown> | null;
   attendance_percent?: number | null;
   fees_due?: number;
 }
 
 export async function getDashboardData(user: SessionUser): Promise<DashboardResponse> {
-  const today = new Date().toISOString().split('T')[0];
-  const dayOfWeek = new Date().getDay(); // 0=Sun..6=Sat
+  const today = todayNPT();
+  const currentDayOfWeek = dayOfWeek(today);
 
   // 1. ADMIN & PRINCIPAL
   if (user.role === 'admin' || user.role === 'principal') {
@@ -71,10 +129,19 @@ export async function getDashboardData(user: SessionUser): Promise<DashboardResp
       latestNotices,
       upcomingExams,
       pendingLeave,
+      pendingStaffLeave,
+      staffPresentToday,
+      staffOnLeaveToday,
       unreadMessages,
       overdueLoans,
       houses,
       recentAudit,
+      feeCollectedToday,
+      pendingSections,
+      staffOnLeaveList,
+      upcomingHolidays,
+      schoolName,
+      schoolAddress,
     ] = await Promise.all([
       one<{ count: number }>("SELECT COUNT(*) as count FROM applications WHERE status = 'new'"),
       one<{ count: number }>("SELECT COUNT(*) as count FROM students WHERE status = 'active'"),
@@ -99,6 +166,9 @@ export async function getDashboardData(user: SessionUser): Promise<DashboardResp
         'SELECT id, name, start_date, end_date FROM exams ORDER BY id DESC LIMIT 3'
       ),
       one<{ count: number }>("SELECT COUNT(*) as count FROM leave_requests WHERE status = 'pending'"),
+      one<{ count: number }>("SELECT COUNT(*) as count FROM staff_leave_requests WHERE status = 'pending'"),
+      one<{ count: number }>("SELECT COUNT(*) as count FROM staff_attendance WHERE date = ? AND status = 'present'", [today]),
+      one<{ count: number }>("SELECT COUNT(*) as count FROM staff_leave_requests WHERE status = 'approved' AND ? BETWEEN from_date AND to_date", [today]),
       one<{ count: number }>("SELECT COUNT(*) as count FROM messages WHERE status = 'new'"),
       one<{ count: number }>("SELECT COUNT(*) as count FROM book_loans WHERE returned_on IS NULL AND due_on < ?", [today]),
       query<{ name: string; points: number }>(
@@ -109,6 +179,41 @@ export async function getDashboardData(user: SessionUser): Promise<DashboardResp
          ORDER BY points DESC`
       ),
       getRecentAudit(6),
+      one<{ total: number }>(
+        'SELECT COALESCE(SUM(amount), 0) as total FROM payments WHERE paid_on = ?',
+        [today]
+      ),
+      query<{ id: number; class_name: string; section_name: string; teacher_name: string | null }>(
+        `SELECT sec.id, c.name as class_name, sec.name as section_name, u.name as teacher_name
+         FROM sections sec
+         JOIN classes c ON sec.class_id = c.id
+         LEFT JOIN users u ON sec.class_teacher_id = u.id
+         WHERE sec.id NOT IN (
+           SELECT DISTINCT e.section_id
+           FROM attendance a
+           JOIN enrollments e ON a.enrollment_id = e.id
+           WHERE a.date = ?
+         )
+         ORDER BY c.sort_order, sec.name`,
+        [today]
+      ),
+      query<{ name: string; role: string; reason: string; leave_type: string | null }>(
+        `SELECT u.name, u.role, slr.reason, lt.name as leave_type
+         FROM staff_leave_requests slr
+         JOIN users u ON slr.user_id = u.id
+         LEFT JOIN leave_types lt ON slr.leave_type_id = lt.id
+         WHERE slr.status = 'approved' AND ? BETWEEN slr.from_date AND slr.to_date`,
+        [today]
+      ),
+      query<{ id: number; date: string; title: string; title_ne: string | null; kind: string }>(
+        `SELECT id, date, title, title_ne, kind
+         FROM school_calendar
+         WHERE date >= ? AND date <= ?
+         ORDER BY date ASC`,
+        [today, addDays(today, 14)]
+      ),
+      getSetting('school_name'),
+      getSetting('school_address'),
     ]);
 
     let outstandingDues = 0;
@@ -156,6 +261,15 @@ export async function getDashboardData(user: SessionUser): Promise<DashboardResp
         badgeVariant: 'warning',
       });
     }
+    if ((pendingStaffLeave?.count ?? 0) > 0) {
+      needsAttention.push({
+        id: 'pending-staff-leave',
+        label: `${pendingStaffLeave?.count} faculty/staff leave request(s) awaiting approval`,
+        count: pendingStaffLeave?.count ?? 0,
+        href: '/app/leave',
+        badgeVariant: 'warning',
+      });
+    }
     if ((overdueLoans?.count ?? 0) > 0) {
       needsAttention.push({
         id: 'overdue-library',
@@ -175,15 +289,40 @@ export async function getDashboardData(user: SessionUser): Promise<DashboardResp
       });
     }
 
-    // Attendance BarChart for the last 6 school days
-    const attendanceChart = [
-      { label: 'Sun', value: 95 },
-      { label: 'Mon', value: 92 },
-      { label: 'Tue', value: 94 },
-      { label: 'Wed', value: 96 },
-      { label: 'Thu', value: 91 },
-      { label: 'Fri', value: 89 },
-    ];
+    // Real student attendance calculated across the last 6 working school days
+    const calCtx = await getCalendarContext();
+    const workingDays: string[] = [];
+    let checkDate = today;
+    let safetyCounter = 0;
+
+    while (workingDays.length < 6 && safetyCounter < 45) {
+      if (isWorkingDay(checkDate, calCtx)) {
+        workingDays.push(checkDate);
+      }
+      checkDate = addDays(checkDate, -1);
+      safetyCounter++;
+    }
+
+    workingDays.reverse();
+
+    const attendanceChart: Array<{ label: string; value: number }> = [];
+    for (const d of workingDays) {
+      const attRow = await one<{ total: number; present: number }>(
+        `SELECT COUNT(*) as total,
+                SUM(CASE WHEN status IN ('present', 'late') THEN 1 ELSE 0 END) as present
+         FROM attendance
+         WHERE date = ?`,
+        [d]
+      );
+
+      const bs = toBS(d);
+      const label = `${bs.monthName.slice(0, 3)} ${bs.day}`;
+      const pct = attRow && attRow.total > 0
+        ? Math.round((attRow.present / attRow.total) * 100)
+        : 0;
+
+      attendanceChart.push({ label, value: pct });
+    }
 
     // House colors
     const houseColorMap: Record<string, string> = {
@@ -214,15 +353,31 @@ export async function getDashboardData(user: SessionUser): Promise<DashboardResp
       meta: a.user_name ? `By ${a.user_name}` : undefined,
     }));
 
+    const todayBS = toBS(today);
+    const todayDateDisplay = {
+      bsEn: todayBS.formatted,
+      bsNe: `${todayBS.day} ${todayBS.monthNameNe} ${todayBS.year}`,
+      adStr: today,
+    };
+
     return {
       role: user.role,
       user: { id: user.id, name: user.name, email: user.email },
+      school_identity: {
+        name: schoolName || 'Balodaya Secondary School',
+        address: schoolAddress || 'Bheerkot-06, Syangja',
+      },
+      today_date_display: todayDateDisplay,
       stats: {
         new_applications: newApps?.count ?? 0,
         total_students: totalStudents?.count ?? 0,
         absent_today: absentToday?.count ?? 0,
         unmarked_sections_today: unmarkedCount,
         outstanding_dues: outstandingDues,
+        staff_present_today: staffPresentToday?.count ?? 0,
+        staff_on_leave_today: staffOnLeaveToday?.count ?? 0,
+        pending_staff_leaves: pendingStaffLeave?.count ?? 0,
+        fee_collected_today: feeCollectedToday?.total ?? 0,
       },
       needsAttention,
       attendanceChart,
@@ -231,6 +386,10 @@ export async function getDashboardData(user: SessionUser): Promise<DashboardResp
       recentAudit: auditEvents,
       upcoming_exams: upcomingExams,
       latest_notices: latestNotices,
+      sections_attendance_pending: pendingSections,
+      staff_on_leave_today_list: staffOnLeaveList,
+      fee_collected_today: feeCollectedToday?.total ?? 0,
+      upcoming_holidays: upcomingHolidays,
     };
   }
 
@@ -262,8 +421,15 @@ export async function getDashboardData(user: SessionUser): Promise<DashboardResp
       [today, user.id]
     );
 
-    let timetableToday: any[] = [];
-    if (dayOfWeek <= 5) {
+    let timetableToday: Array<{
+      period: number;
+      start_time: string;
+      end_time: string;
+      class_name: string;
+      section_name: string;
+      subject_name: string;
+    }> = [];
+    if (currentDayOfWeek <= 5) {
       timetableToday = await query(
         `SELECT tt.period, tt.start_time, tt.end_time,
                 c.name as class_name, sec.name as section_name, sub.name as subject_name
@@ -273,7 +439,7 @@ export async function getDashboardData(user: SessionUser): Promise<DashboardResp
          JOIN subjects sub ON tt.subject_id = sub.id
          WHERE tt.teacher_id = ? AND tt.day_of_week = ?
          ORDER BY tt.period ASC`,
-        [user.id, dayOfWeek]
+        [user.id, currentDayOfWeek]
       );
     }
 
@@ -435,7 +601,7 @@ export async function getDashboardData(user: SessionUser): Promise<DashboardResp
     return {
       role: 'parent',
       user: { id: user.id, name: user.name, email: user.email },
-      children: childrenData as any,
+      children: childrenData,
       latest_notices: latestNotices,
       upcoming_exams: upcomingExams,
     };
@@ -463,7 +629,13 @@ export async function getDashboardData(user: SessionUser): Promise<DashboardResp
 
     let attPercent: number | null = null;
     let feesDue = 0;
-    let timetableToday: any[] = [];
+    let timetableToday: Array<{
+      period: number;
+      start_time: string;
+      end_time: string;
+      subject_name: string;
+      teacher_name: string | null;
+    }> = [];
 
     if (student) {
       const attStats = await query<{ status: string; count: number }>(
@@ -492,7 +664,7 @@ export async function getDashboardData(user: SessionUser): Promise<DashboardResp
         if (bal > 0) feesDue += bal;
       }
 
-      if (student.enrollment_id && dayOfWeek <= 5) {
+      if (student.enrollment_id && currentDayOfWeek <= 5) {
         timetableToday = await query(
           `SELECT tt.period, tt.start_time, tt.end_time,
                   sub.name as subject_name, u.name as teacher_name
@@ -502,7 +674,7 @@ export async function getDashboardData(user: SessionUser): Promise<DashboardResp
            LEFT JOIN users u ON tt.teacher_id = u.id
            WHERE e.id = ? AND tt.day_of_week = ?
            ORDER BY tt.period ASC`,
-          [student.enrollment_id, dayOfWeek]
+          [student.enrollment_id, currentDayOfWeek]
         );
       }
     }
