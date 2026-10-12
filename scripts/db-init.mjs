@@ -15,6 +15,7 @@ const adminName = process.env.ADMIN_NAME || 'System Administrator';
 const adminPassword = process.env.ADMIN_PASSWORD || 'BalodayaAdmin2026!';
 
 const dbUrl = process.env.DATABASE_URL ?? 'file:data/balodaya.db';
+const authToken = process.env.DATABASE_AUTH_TOKEN;
 
 // Ensure data directory exists
 if (dbUrl.startsWith('file:')) {
@@ -25,7 +26,7 @@ if (dbUrl.startsWith('file:')) {
   }
 }
 
-const client = createClient({ url: dbUrl });
+const client = createClient({ url: dbUrl, authToken });
 
 async function init() {
   console.log('Initializing Balodaya School database at:', dbUrl);

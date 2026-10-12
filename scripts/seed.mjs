@@ -11,6 +11,7 @@ try {
 }
 
 const dbUrl = process.env.DATABASE_URL ?? 'file:data/balodaya.db';
+const authToken = process.env.DATABASE_AUTH_TOKEN;
 
 // Ensure data directory exists
 if (dbUrl.startsWith('file:')) {
@@ -21,7 +22,7 @@ if (dbUrl.startsWith('file:')) {
   }
 }
 
-const client = createClient({ url: dbUrl });
+const client = createClient({ url: dbUrl, authToken });
 
 async function seed() {
   console.log('========================================================');

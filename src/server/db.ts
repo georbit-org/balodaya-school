@@ -284,7 +284,8 @@ async function applyMigrations(c: Client) {
 export function db(): Client {
   if (!client) {
     const url = process.env.DATABASE_URL ?? 'file:data/balodaya.db';
-    client = createClient({ url });
+    const authToken = process.env.DATABASE_AUTH_TOKEN;
+    client = createClient({ url, authToken });
   }
 
   if (!foreignKeysEnabled && client) {
