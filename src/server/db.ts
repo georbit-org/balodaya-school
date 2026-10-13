@@ -303,24 +303,38 @@ export function db(): Client {
   return client;
 }
 
+export function toPlainObject<T>(row: unknown): T {
+  if (!row || typeof row !== 'object') return row as T;
+  const copy: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(row)) {
+    if (key === 'length' || /^\d+$/.test(key)) continue;
+    if (typeof value === 'bigint') {
+      copy[key] = Number(value);
+    } else {
+      copy[key] = value;
+    }
+  }
+  return copy as T;
+}
+
 export async function query<T>(sql: string, args: InArgs = []): Promise<T[]> {
   const result = await db().execute({ sql, args });
-  return result.rows as unknown as T[];
+  return result.rows.map((r) => toPlainObject<T>(r));
 }
 
 export async function one<T>(sql: string, args: InArgs = []): Promise<T | undefined> {
   const result = await db().execute({ sql, args });
   if (result.rows.length === 0) return undefined;
-  return result.rows[0] as unknown as T;
+  return toPlainObject<T>(result.rows[0]);
 }
 
 export async function run(
   sql: string,
   args: InArgs = []
-): Promise<{ lastInsertRowid: bigint | number; rowsAffected: number }> {
+): Promise<{ lastInsertRowid: number; rowsAffected: number }> {
   const result = await db().execute({ sql, args });
   return {
-    lastInsertRowid: result.lastInsertRowid ?? 0,
+    lastInsertRowid: result.lastInsertRowid !== undefined ? Number(result.lastInsertRowid) : 0,
     rowsAffected: result.rowsAffected,
   };
 }

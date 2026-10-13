@@ -30,10 +30,11 @@ export default async function HomePage() {
 
   const cmsPage = await getPageBySlug('', { includeDrafts: canEdit }).catch(() => null);
   if (cmsPage && cmsPage.sections && cmsPage.sections.length > 0) {
+    const plainPage = JSON.parse(JSON.stringify(cmsPage));
     return (
       <div className={styles.page}>
         <h1 className="srOnly">{SCHOOL_INFO.name} — Bheerkot, Syangja</h1>
-        <PageRenderer page={cmsPage} canEdit={canEdit} />
+        <PageRenderer page={plainPage} canEdit={canEdit} />
       </div>
     );
   }
