@@ -6,6 +6,7 @@ import { SCHOOL_VIDEOS } from '@/content/videos';
 import { GalleryItem, GALLERY_CATEGORIES, GalleryCategory } from '@/content/gallery';
 import { Dialog } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
+import DiagonalMarqueeCarousel from '@/components/ui/DiagonalMarqueeCarousel';
 import styles from './page.module.css';
 
 interface GalleryClientProps {
@@ -54,6 +55,30 @@ export function GalleryClient({ items }: GalleryClientProps) {
 
   return (
     <>
+      <section className={styles.marqueeSection} aria-labelledby="gallery-highlights-heading">
+        <div className={styles.marqueeIntro}>
+          <p className={styles.marqueeEyebrow}>Life at Balodaya</p>
+          <h2 id="gallery-highlights-heading" className={styles.marqueeHeading}>
+            Moments from our campus
+          </h2>
+          <p className={styles.marqueeDescription}>
+            A moving archive of learning, celebration, creativity, and student life.
+          </p>
+        </div>
+        <DiagonalMarqueeCarousel
+          cards={filteredItems.slice(0, 14).map((item) => ({
+            id: item.id,
+            url: item.src,
+            title: item.title,
+          }))}
+          baseSpeed={125}
+          onCardClick={(card) => {
+            const index = filteredItems.findIndex((item) => item.id === card.id);
+            if (index >= 0) setLightboxIndex(index);
+          }}
+        />
+      </section>
+
       {/* Primary Tab Navigation: Photos vs Videos */}
       <div className={styles.tabBar} role="tablist" aria-label="Gallery media categories">
         <button

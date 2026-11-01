@@ -1,0 +1,168 @@
+.carousel {
+  position: relative;
+  width: 100%;
+  height: min(76svh, 720px);
+  min-height: 520px;
+  overflow: hidden;
+  background: #071b2b;
+  isolation: isolate;
+}
+
+.marqueeField {
+  position: absolute;
+  top: -34%;
+  left: -18%;
+  z-index: 1;
+  display: flex;
+  width: 136%;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rowViewport {
+  width: 100%;
+  overflow: hidden;
+}
+
+.rowTrack {
+  display: flex;
+  width: max-content;
+  gap: 24px;
+  animation-duration: var(--speed);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+.rowViewport:hover .rowTrack,
+.rowViewport:focus-within .rowTrack {
+  animation-play-state: paused;
+}
+
+.moveLeft {
+  animation-name: marqueeLeft;
+}
+
+.moveRight {
+  animation-name: marqueeRight;
+}
+
+.card {
+  position: relative;
+  display: block;
+  width: 320px;
+  height: 224px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: #0c2d45;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34);
+  cursor: pointer;
+  text-align: left;
+  transform: translateZ(0);
+  transition: box-shadow 180ms ease, filter 180ms ease;
+}
+
+.card:hover,
+.card:focus-visible {
+  z-index: 2;
+  filter: brightness(1.12);
+  box-shadow: 0 22px 42px rgba(0, 0, 0, 0.48);
+  outline: 2px solid #7dd3fc;
+  outline-offset: 3px;
+}
+
+.cardImage {
+  object-fit: cover;
+}
+
+.cardShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(2, 20, 35, 0.02), rgba(2, 20, 35, 0.68));
+}
+
+.cardTitle {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  left: 16px;
+  overflow: hidden;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.55);
+  white-space: nowrap;
+}
+
+.fadeTop,
+.fadeBottom {
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 3;
+  height: 22%;
+  pointer-events: none;
+}
+
+.fadeTop {
+  top: 0;
+  background: linear-gradient(180deg, #071b2b 0%, rgba(7, 27, 43, 0.8) 35%, transparent 100%);
+}
+
+.fadeBottom {
+  bottom: 0;
+  background: linear-gradient(0deg, #071b2b 0%, rgba(7, 27, 43, 0.82) 35%, transparent 100%);
+}
+
+@keyframes marqueeLeft {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes marqueeRight {
+  from { transform: translate3d(-50%, 0, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+
+@media (max-width: 700px) {
+  .carousel {
+    height: 64svh;
+    min-height: 420px;
+  }
+
+  .marqueeField {
+    top: -25%;
+    left: -44%;
+    width: 188%;
+    gap: 14px;
+  }
+
+  .rowTrack {
+    gap: 14px;
+  }
+
+  .card {
+    width: 220px;
+    height: 154px;
+    border-radius: 9px;
+  }
+
+  .cardTitle {
+    right: 10px;
+    bottom: 9px;
+    left: 10px;
+    font-size: 0.68rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rowTrack {
+    animation-play-state: paused;
+  }
+}

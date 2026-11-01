@@ -1,18 +1,29 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Image from 'next/image';
 import type { HeroSlideRecord } from '@/app/api/hero-slides/route';
+import { SCHOOL_INFO } from '@/content/school';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import styles from './HeroSlideshow.module.css';
 
 interface HeroSlideshowProps {
   initialSlides: HeroSlideRecord[];
 }
 
+const utilityItems: Array<{ label: string; href: string; icon: IconName }> = [
+  { label: 'About', href: '/about', icon: 'building' },
+  { label: 'Student Life', href: '/student-life', icon: 'users' },
+  { label: 'Facilities', href: '/facilities', icon: 'building' },
+  { label: 'Gallery', href: '/gallery', icon: 'grid' },
+  { label: 'Exam Results', href: '/students/results', icon: 'reports' },
+  { label: 'Resources', href: '/students/resources', icon: 'resources' },
+  { label: 'Careers', href: '/careers', icon: 'vacancies' },
+  { label: 'Contact', href: '/contact', icon: 'phone' },
+];
+
 export function HeroSlideshow({ initialSlides }: HeroSlideshowProps) {
   const [slides, setSlides] = useState<HeroSlideRecord[]>(initialSlides);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -47,7 +58,7 @@ export function HeroSlideshow({ initialSlides }: HeroSlideshowProps) {
 
   // Autoplay handler
   useEffect(() => {
-    if (!isPlaying || isHovered || slideCount <= 1) {
+    if (isHovered || slideCount <= 1) {
       if (autoPlayTimerRef.current) {
         clearInterval(autoPlayTimerRef.current);
       }
@@ -63,7 +74,7 @@ export function HeroSlideshow({ initialSlides }: HeroSlideshowProps) {
         clearInterval(autoPlayTimerRef.current);
       }
     };
-  }, [isPlaying, isHovered, slideCount, goToNext]);
+  }, [isHovered, slideCount, goToNext]);
 
   // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -90,83 +101,76 @@ export function HeroSlideshow({ initialSlides }: HeroSlideshowProps) {
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
-      {/* Visual Media Banner Wrapper */}
+      {/* Video-first hero media wrapper */}
       <div className={styles.mediaWrapper}>
-        {activeSlides.map((slide, idx) => (
-          <div
-            key={slide.id || `slide-${idx}`}
-            className={`${styles.slideImageWrapper} ${
-              idx === currentIndex ? styles.slideActive : ''
-            }`}
-            aria-hidden={idx !== currentIndex}
-          >
-            <Image
-              src={slide.image}
-              alt={slide.title || 'Balodaya School Campus'}
-              fill
-              priority={idx === 0}
-              sizes="100vw"
-              className={styles.image}
-            />
-          </div>
-        ))}
+        <video
+          className={styles.backgroundVideo}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+        >
+          <source src="/assets/videos/balodaya%20school.mp4" type="video/mp4" />
+        </video>
 
         {/* Sky-blue atmospheric gradient overlay */}
         <div className={styles.skyAtmosphereOverlay} />
 
-        {/* Tactile HUD Controls */}
-        <div className={styles.mediaControlsHud} aria-label="Slideshow controls">
-          <span className={styles.slideCounter} aria-live="polite">
-            {String(currentIndex + 1).padStart(2, '0')} / {String(slideCount).padStart(2, '0')}
-          </span>
+        <div className={styles.heroContent}>
+          <div className={styles.heroCopy}>
+            <p className={styles.heroKicker}>
+              <span className={styles.kickerRule} aria-hidden="true" />
+              {activeSlides[currentIndex]?.badge || 'Learning with purpose'}
+            </p>
+            <h2 className={styles.heroTitle}>
+              {activeSlides[currentIndex]?.title || SCHOOL_INFO.shortName}
+            </h2>
+            <p className={styles.heroSubtitle}>
+              {activeSlides[currentIndex]?.subtitle || SCHOOL_INFO.motto}
+            </p>
+            <div className={styles.heroActions}>
+              {activeSlides[currentIndex]?.primary_cta_text && (
+                <a
+                  href={activeSlides[currentIndex].primary_cta_link || '/about'}
+                  className={styles.primaryAction}
+                >
+                  {activeSlides[currentIndex].primary_cta_text}
+                  <span aria-hidden="true">&#8594;</span>
+                </a>
+              )}
+              {activeSlides[currentIndex]?.secondary_cta_text && (
+                <a
+                  href={activeSlides[currentIndex].secondary_cta_link || '/contact'}
+                  className={styles.secondaryAction}
+                >
+                  {activeSlides[currentIndex].secondary_cta_text}
+                </a>
+              )}
+            </div>
+          </div>
 
-          <button
-            type="button"
-            className={styles.hudButton}
-            onClick={goToPrev}
-            aria-label="Previous slide"
-            title="Previous slide (Left Arrow)"
-          >
-            &#8592;
-          </button>
-
-          <button
-            type="button"
-            className={styles.hudButton}
-            onClick={() => setIsPlaying((prev) => !prev)}
-            aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
-            title={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
-          >
-            {isPlaying ? '⏸' : '▶'}
-          </button>
-
-          <button
-            type="button"
-            className={styles.hudButton}
-            onClick={goToNext}
-            aria-label="Next slide"
-            title="Next slide (Right Arrow)"
-          >
-            &#8594;
-          </button>
+          <div className={styles.heroMeta}>
+            <span>{SCHOOL_INFO.location.municipality}</span>
+            <span className={styles.metaDivider} aria-hidden="true" />
+            <span>Est. {SCHOOL_INFO.establishedBS}</span>
+          </div>
         </div>
 
-        {/* Progress Indicator Pills */}
-        <div className={styles.progressIndicatorBar} role="tablist" aria-label="Slides">
-          {activeSlides.map((s, idx) => (
-            <button
-              key={`pill-${s.id || idx}`}
-              type="button"
-              role="tab"
-              aria-selected={idx === currentIndex}
-              aria-label={`Go to slide ${idx + 1}: ${s.title}`}
-              className={`${styles.progressPill} ${
-                idx === currentIndex ? styles.progressPillActive : ''
-              }`}
-              onClick={() => setCurrentIndex(idx)}
-            />
-          ))}
-        </div>
+        <nav className={styles.utilityDock} aria-label="Quick school links">
+          <div className={styles.utilityItems}>
+            {utilityItems.map((item) => (
+              <a key={item.href} href={item.href} className={styles.utilityItem}>
+                <span className={styles.utilityIcon} aria-hidden="true">
+                  <Icon name={item.icon} size={22} />
+                </span>
+                <span className={styles.utilityLabel}>{item.label}</span>
+              </a>
+            ))}
+
+          </div>
+        </nav>
       </div>
     </section>
   );
