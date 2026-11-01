@@ -4,30 +4,92 @@
   z-index: 800;
   background-color: var(--surface);
   border-bottom: 1px solid var(--line);
-  height: 64px;
+  height: 85px;
   display: flex;
   align-items: center;
+  justify-content: center;
+}
+
+.heroHeader {
+  position: absolute;
+  align-items: center;
+  top: 0px;
+  right: 0;
+  left: 0;
+  background: linear-gradient(180deg, rgba(5, 20, 35, 0.72), transparent);
+  border-bottom: 0;
+  color: #FFFFFF;
+  height: 150px;
+}
+
+.heroHeader .brandName,
+.heroHeader .brandLocation,
+.heroHeader .navLink,
+.heroHeader .phoneLink {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.heroHeader .brandLocation,
+.heroHeader .caret {
+  color: rgba(224, 242, 254, 0.72);
+}
+
+.heroHeader .logo {
+  filter: brightness(0.01) invert(0.9);
+}
+
+.heroHeader .navLink:hover,
+.heroHeader .phoneLink:hover,
+.heroHeader .activeLink {
+  color: #FFFFFF;
+}
+
+.heroHeader .mobileToggle {
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #FFFFFF;
 }
 
 .navContainer {
-  display: flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-4);
+  gap: var(--sp-7);
   width: 100%;
 }
 
 .brand {
+  width: 400px;
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
+  gap: var(--sp-4);
   text-decoration: none;
   flex-shrink: 0;
 }
 
+.heroHeader .brand {
+  gap: var(--sp-4);
+}
+
+.heroHeader .logoWrapper {
+  width: 158px;
+  height: 158px;
+}
+
+.heroHeader .brandName {
+  font-size: clamp(2.4rem, 2vw, 1.9rem);
+  line-height: 1;
+}
+
+.heroHeader .brandLocation {
+  font-size: 1rem;
+}
+
 .logoWrapper {
-  width: 38px;
-  height: 38px;
+  width: 80px !important;
+  height: 80px !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -61,8 +123,28 @@
   display: none;
 }
 
-@media (min-width: 900px) {
-  .desktopNav {
+.leftDesktopNav {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+}
+
+.rightHeaderGroup {
+  grid-column: 3;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: var(--sp-7);
+}
+
+.rightDesktopNav {
+  display: none;
+}
+
+@media (min-width: 760px) {
+  .leftDesktopNav,
+  .rightDesktopNav {
     display: block;
   }
 }
@@ -71,12 +153,15 @@
   list-style: none;
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
+  gap: var(--sp-7);
   margin: 0;
   padding: 0;
 }
 
 .navLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
   font-family: var(--font-body);
   font-size: var(--text-sm);
   font-weight: 500;
@@ -110,6 +195,10 @@
 }
 
 .caret {
+
+  .navIcon {
+    color: currentColor;
+  }
   font-size: 0.75rem;
   color: var(--ink-faint);
 }
@@ -151,6 +240,25 @@
   flex-shrink: 0;
 }
 
+@media (max-width: 1199px) and (min-width: 760px) {
+  .navList {
+    gap: var(--sp-1);
+  }
+
+  .navLink {
+    font-size: 0.78rem;
+    padding-inline: 5px;
+  }
+
+  .rightHeaderGroup {
+    gap: var(--sp-2);
+  }
+
+  .heroHeader .brandLocation {
+    display: none;
+  }
+}
+
 .phoneLink {
   display: none;
   font-family: var(--font-body);
@@ -158,6 +266,9 @@
   font-weight: 500;
   color: var(--ink-soft);
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 @media (min-width: 1024px) {
@@ -168,6 +279,10 @@
 
 .phoneLink:hover {
   color: var(--accent);
+}
+
+.phoneNumber {
+  display: none;
 }
 
 .mobileToggle {
@@ -184,10 +299,54 @@
   cursor: pointer;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 760px) {
   .mobileToggle {
     display: none;
   }
+
+  .heroHeader .logoWrapper {
+    width: 50px;
+    height: 50px;
+  }
+
+  .heroHeader .brandName {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 759px) {
+  .navContainer {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .brand {
+    order: 1;
+  }
+
+  .rightHeaderGroup {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .heroHeader {
+    top: 0;
+    height: 64px;
+  }
+
+  .heroHeader .logoWrapper {
+    width: 38px;
+    height: 38px;
+  }
+
+  .heroHeader .brandName {
+    font-size: var(--text-lg);
+  }
+
+  .heroHeader .brandLocation {
+    font-size: var(--text-sm);
+  }
+
 }
 
 .mobileDrawer {

@@ -4,9 +4,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SCHOOL_INFO } from '@/content/school';
 import { LEADERSHIP_INFO } from '@/content/leadership';
-import { HOUSES_INFO } from '@/content/houses';
+import { HOUSES_INFO, HOUSES_PHOTOS } from '@/content/houses';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
+import DiagonalMarqueeCarousel from '@/components/ui/DiagonalMarqueeCarousel';
 import { query } from '@/server/db';
 import { HeroSlideshow } from '@/components/hero/HeroSlideshow';
 import type { HeroSlideRecord } from '@/app/api/hero-slides/route';
@@ -83,24 +84,50 @@ export default async function HomePage() {
       {/* BLOCK 1: DYNAMIC HERO SLIDESHOW */}
       <HeroSlideshow initialSlides={heroSlides} />
 
-      {/* BLOCK 2: WELCOME (LETTER LAYOUT) */}
-      <section className={styles.letterSection} aria-labelledby="chairman-welcome">
-        <div className={`container ${styles.letterContent}`}>
-          <p className={styles.letterEyebrow}>From the Founder &amp; Chairman</p>
-          <h2 id="chairman-welcome" className={styles.letterHeading}>
-            A Message to Our School Community
-          </h2>
-          <blockquote className={styles.letterQuote}>
-            &ldquo;{LEADERSHIP_INFO.chairman.message}&rdquo;
-          </blockquote>
-          <div className={styles.letterSignoff}>
+      {/* BLOCK 2: FOUNDER MESSAGE + ABOUT */}
+      <section className={styles.introSection} aria-label="About Balodaya and founder message">
+        <div className={styles.bgImageWrapper}>
+              <Image
+                src="/assets/images/vision-mission/building.jpeg"
+                alt="" // Decorative background images should have empty alt text
+                fill
+                sizes="100vw"
+                className={styles.bgImage}
+              />
+            </div>
+        <div className={`container ${styles.introGrid}`}>
+          <article className={styles.aboutColumn} aria-labelledby="about-heading">
+            {/* Background Image placed inside the article */}
+            
+
+            {/* Content Layer */}
+            <div className={styles.contentLayer}>
+              <h2 id="about-heading" className={styles.sectionHeading}>
+                About Balodaya
+              </h2>
+              <p className={styles.bodyText}>{SCHOOL_INFO.aboutText}</p>
+              <div>
+                <Button variant="secondary" href="/about">
+                  Read our origin &amp; vision &rarr;
+                </Button>
+              </div>
+            </div>
+          </article>
+          <article className={styles.founderColumn} aria-labelledby="chairman-welcome">
+            <p className={styles.letterEyebrow}>From the Founder &amp; Chairman</p>
+            <h2 id="chairman-welcome" className={styles.letterHeading}>
+              A Message to Our School Community
+            </h2>
             <Image
               src={LEADERSHIP_INFO.chairman.image}
               alt={LEADERSHIP_INFO.chairman.name}
-              width={64}
-              height={64}
-              className={styles.chairmanPortrait}
+              width={180}
+              height={180}
+              className={styles.founderPortrait}
             />
+            <blockquote className={styles.letterQuote}>
+              &ldquo;{LEADERSHIP_INFO.chairman.message}&rdquo;
+            </blockquote>
             <div className={styles.signoffInfo}>
               <span className={styles.signoffName}>{LEADERSHIP_INFO.chairman.name}</span>
               <span className={styles.signoffTitle}>{LEADERSHIP_INFO.chairman.title}</span>
@@ -108,38 +135,14 @@ export default async function HomePage() {
                 Read the principal&apos;s message &rarr;
               </Link>
             </div>
-          </div>
+          </article>
+
+          
         </div>
       </section>
 
-      {/* BLOCK 3: ABOUT US (TWO COLUMNS) */}
-      <section className="container" aria-labelledby="about-heading">
-        <div className={styles.aboutGrid}>
-          <div className={styles.aboutTextColumn}>
-            <h2 id="about-heading" className={styles.sectionHeading}>
-              About Balodaya
-            </h2>
-            <p className={styles.bodyText}>{SCHOOL_INFO.aboutText}</p>
-            <div>
-              <Button variant="secondary" href="/about">
-                Read our origin &amp; vision &rarr;
-              </Button>
-            </div>
-          </div>
-          <div className={styles.aboutImageWrapper}>
-            <Image
-              src="/assets/images/vision-mission/building.jpeg"
-              alt="Balodaya Secondary School building in Sundar Bazar"
-              fill
-              sizes="(min-width: 840px) 45vw, 95vw"
-              className={styles.aboutImage}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* BLOCK 4: LATEST NOTICES (PLAIN LIST) */}
-      <section className="container" aria-labelledby="notices-heading">
+      {/* BLOCK 4: LATEST NOTICES (AUTO-SCROLLING ANNOUNCEMENTS) */}
+      <section className={styles.noticesBand} aria-labelledby="notices-heading">
         <div className={styles.noticesSection}>
           <div className={styles.sectionHeaderRow}>
             <h2 id="notices-heading" className={styles.sectionHeading}>
@@ -151,16 +154,28 @@ export default async function HomePage() {
           </div>
 
           {latestNotices.length > 0 ? (
-            <ul className={styles.noticeList}>
-              {latestNotices.slice(0, 5).map((notice) => (
-                <li key={notice.id} className={styles.noticeItem}>
-                  <Link href={`/news/${notice.id}`} className={styles.noticeTitleLink}>
-                    {notice.title}
-                  </Link>
-                  <span className={styles.noticeMeta}>{notice.date}</span>
-                </li>
-              ))}
-            </ul>
+            <div className={styles.noticeViewport}>
+              <div className={styles.noticeTrack}>
+                <ul className={styles.noticeList}>
+                  {latestNotices.slice(0, 5).map((notice) => (
+                    <li key={notice.id} className={styles.noticeItem}>
+                      <Link href={`/news/${notice.id}`} className={styles.noticeTitleLink}>
+                        {notice.title}
+                      </Link>
+                      <span className={styles.noticeMeta}>{notice.date}</span>
+                    </li>
+                  ))}
+                </ul>
+                <ul className={styles.noticeList} aria-hidden="true">
+                  {latestNotices.slice(0, 5).map((notice) => (
+                    <li key={`duplicate-${notice.id}`} className={styles.noticeItem}>
+                      <span className={styles.noticeTitleLink}>{notice.title}</span>
+                      <span className={styles.noticeMeta}>{notice.date}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           ) : (
             <EmptyState
               title="No notices have been published yet."
@@ -170,36 +185,28 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* BLOCK 5: PHOTO STRIP (5 UNMODIFIED PHOTOS) */}
-      <section className="container" aria-labelledby="photo-strip-heading">
-        <div className={styles.photoStripSection}>
-          <div className={styles.photoStripHeader}>
-            <h2 id="photo-strip-heading" className={styles.sectionHeading}>
-              Campus Activities
-            </h2>
-            <Link href="/gallery" className={styles.heroSecondaryLink}>
-              See the gallery &rarr;
-            </Link>
-          </div>
-          <div className={styles.photoStripTrack}>
-            {photoStripImages.map((img, idx) => (
-              <div key={idx} className={styles.stripItem}>
-                <Image
-                  src={img.src}
-                  alt={img.alt}
-                  fill
-                  sizes="(min-width: 768px) 20vw, 240px"
-                  className={styles.stripImage}
-                />
-              </div>
-            ))}
-          </div>
+      {/* BLOCK 5: DIAGONAL CAMPUS GALLERY */}
+      <section className={styles.homeGallerySection} aria-labelledby="photo-strip-heading">
+        <div className={styles.homeGalleryHeader}>
+          <h2 id="photo-strip-heading" className={styles.sectionHeading}>
+            Campus Activities
+          </h2>
+          <Link href="/gallery" className={styles.heroSecondaryLink}>
+            See the gallery &rarr;
+          </Link>
         </div>
+        <DiagonalMarqueeCarousel
+          cards={photoStripImages.map((image, index) => ({
+            id: `home-gallery-${index}`,
+            url: image.src,
+            title: image.alt,
+          }))}
+          baseSpeed={125}
+        />
       </section>
 
-      {/* BLOCK 6: HOUSES (5 COLOURED VERTICAL BARS) */}
-      <section className="container" aria-labelledby="houses-heading">
-        <div className={styles.housesSection}>
+      {/* BLOCK 6: HOUSES BENTO GRID */}
+      <section className={styles.housesSection} aria-labelledby="houses-heading">
           <div className={styles.sectionHeaderRow}>
             <h2 id="houses-heading" className={styles.sectionHeading}>
               Collegiate Houses
@@ -209,23 +216,35 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className={styles.housesGrid}>
-            {HOUSES_INFO.map((house) => (
+            {HOUSES_INFO.map((house, index) => (
               <div
                 key={house.name}
                 className={styles.houseCard}
-                style={{ borderLeftColor: house.colorToken }}
+                style={{ '--house-color': house.colorToken } as React.CSSProperties}
               >
-                <h3 className={styles.houseName}>{house.name} House</h3>
-                <p className={styles.houseMotto}>&ldquo;{house.motto}&rdquo;</p>
+                <Image
+                  src={HOUSES_PHOTOS[index % HOUSES_PHOTOS.length]}
+                  alt={`${house.name} House activities`}
+                  fill
+                  sizes="(min-width: 900px) 40vw, 100vw"
+                  className={styles.houseImage}
+                />
+                <span className={styles.houseTint} aria-hidden="true" />
+                <div className={styles.houseCardContent}>
+                  <span className={styles.houseIndex}>0{index + 1}</span>
+                  <h3 className={styles.houseName}>{house.name} House</h3>
+                  <p className={styles.houseMotto}>&ldquo;{house.motto}&rdquo;</p>
+                  <Link href="/student-life#houses" className={styles.houseLink}>
+                    View house standings &rarr;
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
-        </div>
       </section>
 
       {/* BLOCK 7: HOW TO APPLY (3 NUMBERED STEPS) */}
-      <section className="container" aria-labelledby="apply-heading">
-        <div className={styles.applySection}>
+      <section className={styles.applySection} aria-labelledby="apply-heading">
           <div className={styles.sectionHeaderRow}>
             <h2 id="apply-heading" className={styles.sectionHeading}>
               How to Apply
@@ -234,28 +253,27 @@ export default async function HomePage() {
               Admission details &rarr;
             </Link>
           </div>
-          <div className={styles.stepsGrid}>
-            <div className={styles.stepCard}>
+          <ol className={styles.stepsGrid}>
+            <li className={styles.stepCard}>
               <span className={styles.stepNumber}>01</span>
               <p className={styles.stepText}>Fill in the online application</p>
-            </div>
-            <div className={styles.stepCard}>
+            </li>
+            <li className={styles.stepCard}>
               <span className={styles.stepNumber}>02</span>
               <p className={styles.stepText}>The school office contacts you</p>
-            </div>
-            <div className={styles.stepCard}>
+            </li>
+            <li className={styles.stepCard}>
               <span className={styles.stepNumber}>03</span>
               <p className={styles.stepText}>
                 Visit the school with the documents the office asks for
               </p>
-            </div>
-          </div>
+            </li>
+          </ol>
           <div className={styles.applyActions}>
             <Button variant="primary" href="/admissions">
               Start application
             </Button>
           </div>
-        </div>
       </section>
 
       {/* BLOCK 8: QUOTE LINE */}

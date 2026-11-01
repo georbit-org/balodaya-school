@@ -3,29 +3,92 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-8);
   padding-bottom: var(--sp-8);
 }
 
-/* 2. LETTER BLOCK: Centred column with chairman's message */
-.letterSection {
-  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
-  border-block: 1px solid var(--sky-border);
-  padding-block: var(--sp-7);
+/* 2. INTRO BLOCK: Founder message and school story */
+.introSection {
+  position: relative;
+  min-height: 100svh;
+  /* margin-top: calc(-1 * var(--sp-8)); Negates the global page gap */
+  overflow: hidden; /* Ensures the background image doesn't spill out */
+  background: #27324c; /* Fallback dark background */
+  display: flex;
+  align-items: center;
+  padding-block: clamp(var(--sp-4), 8vh, var(--sp-6));
+  /* padding-top: 50px; */
+  width: 100%;
 }
 
-.letterContent {
-  max-width: 720px;
-  margin-inline: auto;
+.introGrid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
+  gap: clamp(var(--sp-6), 4vw, var(--sp-8));
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+  padding-inline: clamp(1rem, 4vw, 4rem);
+}
+
+.founderColumn,
+.aboutColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.founderColumn {
+  gap: var(--sp-4);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(0.5rem, 5vw, 1.5rem);
+  backdrop-filter: blur(2px); /* Optional modern frosted glass effect */
+  width: 100%;
+  max-height: 670px;
+}
+
+/* 1. ABOUT COLUMN & BACKGROUND IMAGE STYLING */
+.aboutColumn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(2.5rem, 5vw, 5rem);
+  backdrop-filter: blur(2px); /* Optional modern frosted glass effect */
+  width: 100%;
+  max-height: 670px;
+}
+
+/* Container locking the image to the background */
+.bgImageWrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.25; /* Adjust visibility of the building image across the section */
+  pointer-events: none;
+}
+
+.bgImage {
+  object-fit: cover;
+  object-position: center;
+}
+/* Ensures text sits comfortably above the background image */
+.contentLayer {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: var(--sp-5);
 }
 
+/* Typography & Elements */
 .letterEyebrow {
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--sky-deep);
+  color:#ffff;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0;
@@ -33,35 +96,29 @@
 
 .letterHeading {
   font-family: var(--font-heading);
-  font-size: var(--text-2xl);
+  font-size: var(--text-xl);
   font-weight: 600;
-  color: var(--ink);
+  color: #ffff;
   margin: 0;
 }
 
+.founderPortrait {
+  width: 400px;
+  height: 250px;
+  margin-top: var(--sp-2);
+  border-radius: var(--radius);
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
 .letterQuote {
-  font-size: var(--text-lg);
-  line-height: 1.7;
-  color: var(--ink);
+  font-size: clamp(1.2rem, 1.1vw, 1.05rem);
+  line-height: 1.65;
+  color: #ffff;
   margin: 0;
   font-style: italic;
   border-left: 3px solid var(--sky-accent);
   padding-left: var(--sp-4);
-}
-
-.letterSignoff {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-4);
-  padding-top: var(--sp-2);
-}
-
-.chairmanPortrait {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius);
-  object-fit: cover;
-  border: 1px solid var(--line);
 }
 
 .signoffInfo {
@@ -72,17 +129,17 @@
 .signoffName {
   font-weight: 600;
   font-size: var(--text-base);
-  color: var(--ink);
+  color: #ffffff;
 }
 
 .signoffTitle {
   font-size: var(--text-sm);
-  color: var(--ink-soft);
+  color: #f1f5f9;
 }
 
 .signoffLink {
   margin-top: var(--sp-2);
-  font-size: var(--text-sm);
+  font-size:--ink var(--text-sm);
   color: var(--accent);
   text-decoration: none;
 }
@@ -92,66 +149,65 @@
   text-decoration: underline;
 }
 
-/* 3. ABOUT US: Two-column layout */
-.aboutGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--sp-6);
-  align-items: center;
-}
-
-@media (min-width: 840px) {
-  .aboutGrid {
-    grid-template-columns: 1.2fr 1fr;
-    gap: var(--sp-7);
-  }
-}
-
-.aboutTextColumn {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
-}
-
 .sectionHeading {
   font-family: var(--font-heading);
-  font-size: var(--text-2xl);
+  font-size: clamp(1.8rem, 2.5vw, 2.5rem);
   font-weight: 600;
-  color: var(--ink);
+  color: #ffffff !important;
   margin: 0;
 }
 
 .bodyText {
-  color: var(--ink-soft);
-  line-height: 1.65;
+  color: #f1f5f9 !important;
+  font-size: clamp(0.85rem, 1.1vw, 1.05rem);
+  line-height: 1.55;
   margin: 0;
 }
 
-.aboutImageWrapper {
-  position: relative;
+/* Responsive breakpoint for Mobile/Tablets */
+@media (max-width: 839px) {
+  .introSection {
+    min-height: auto;
+    padding-block: var(--sp-7);
+  }
+
+  .introGrid {
+    grid-template-columns: 1fr; /* Stacks them vertically on smaller screens */
+    gap: var(--sp-8);
+  }
+
+  .founderPortrait {
+    width: 140px;
+    height: 140px;
+  }
+}
+
+/* 4. NOTICES SECTION: Full-width auto-scrolling announcements */
+.noticesBand {
   width: 100%;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  border-radius: var(--radius);
-  border: 1px solid var(--line);
-  background-color: var(--surface-2);
+  /* padding-block: clamp(var(--sp-6), 7vw, var(--sp-8));
+  background: linear-gradient(135deg, var(--surface-2), var(--sky-mist));
+  border-block: 1px solid var(--sky-border); */
+  background: #f7f8fa;
+  padding: 60px 20px;
 }
 
-.aboutImage {
-  object-fit: cover;
-}
-
-/* 4. NOTICES SECTION: Clean list */
 .noticesSection {
   background-color: var(--surface);
   border: 1px solid var(--sky-border);
-  border-top: 3px solid var(--sky-accent);
+  border-top: 5px solid var(--sky-accent);
   border-radius: var(--radius);
-  padding: var(--sp-6);
+  width: min(100% - 2 * var(--gutter), 1440px);
+  margin-inline: auto;
+  padding: clamp(var(--sp-5), 4vw, var(--sp-7));
   display: flex;
   flex-direction: column;
   gap: var(--sp-5);
   box-shadow: 0 4px 16px rgba(2, 132, 199, 0.05);
+}
+
+.noticesSection .sectionHeading {
+  color: var(--ink) !important;
 }
 
 .sectionHeaderRow {
@@ -168,15 +224,44 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  divide-y: 1px solid var(--line);
+}
+
+.noticeViewport {
+  position: relative;
+  height: clamp(220px, 24vw, 300px);
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+}
+
+.noticeTrack {
+  animation: noticeScroll 8s linear infinite;
+}
+
+.noticeViewport:hover .noticeTrack,
+.noticeViewport:focus-within .noticeTrack {
+  animation-play-state: paused;
+}
+
+@keyframes noticeScroll {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-50%);
+  }
 }
 
 .noticeItem {
   display: flex;
   justify-content: space-between;
+  font-size: clamp(1rem, 1.1vw, 1.05rem);
   align-items: baseline;
-  padding-block: var(--sp-3);
-  border-bottom: 1px solid var(--line);
+  padding: 15px 15px;
+  margin-top: 15px;
+  border-radius: 0.8rem;
+  border: 2px solid var(--line);
+  border-left: 5px solid blue;
   gap: var(--sp-4);
 }
 
@@ -200,139 +285,281 @@
   white-space: nowrap;
 }
 
-/* 5. PHOTO STRIP: 5 photos in a row */
-.photoStripSection {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
-}
-
-.photoStripHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.photoStripTrack {
-  display: grid;
-  grid-template-columns: repeat(8, 240px);
-  gap: var(--sp-3);
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-bottom: var(--sp-2);
-}
-
-@media (min-width: 1280px) {
-  .photoStripTrack {
-    grid-template-columns: repeat(8, 1fr);
+@media (prefers-reduced-motion: reduce) {
+  .noticeTrack {
+    animation: none;
   }
 }
 
-.stripItem {
-  position: relative;
-  aspect-ratio: 4 / 3;
+/* 5. PHOTO STRIP: 5 photos in a row */
+.homeGallerySection {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
   overflow: hidden;
-  border-radius: var(--radius);
-  border: 1px solid var(--line);
-  scroll-snap-align: start;
-  background-color: var(--surface-2);
+  background: #fbfbfb;
 }
 
-.stripImage {
-  object-fit: cover;
+.homeGalleryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(100% - 2 * var(--gutter), 1440px);
+  margin-inline: auto;
+  padding-block: var(--sp-6);
+}
+
+.homeGalleryHeader .sectionHeading {
+  color: #17193d !important;
+}
+
+.homeGalleryHeader .heroSecondaryLink {
+  color: #7dd3fc;
+}
+
+@media (max-width: 560px) {
+  .homeGalleryHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
 }
 
 /* 6. HOUSES BLOCK: 5 vertical coloured bars */
 .housesSection {
-  background-color: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: var(--sp-6);
+  overflow: hidden;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   gap: var(--sp-5);
+  background: #fafafa;
+  padding: 60px 80px;
+  max-height: 800px;
+  width: 100%;
 }
 
 .housesGrid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--sp-4);
-}
-
-@media (min-width: 640px) {
-  .housesGrid {
-    grid-template-columns: repeat(5, 1fr);
-  }
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-rows: minmax(190px, 1fr);
+  gap: var(--sp-3);
 }
 
 .houseCard {
-  border: 1px solid var(--line);
-  border-left-width: 6px;
-  background-color: var(--paper);
-  padding: var(--sp-4);
+  position: relative;
+  min-height: 220px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--house-color) 12%, white 48%);
+  border-radius: 10px;
+  background: var(--house-color);
+  isolation: isolate;
+}
+.housesSection .sectionHeading {
+  color: #17193d !important;
+}
+
+.houseCard:nth-child(1) {
+  grid-column: span 5;
+  grid-row: span 2;
+}
+
+.houseCard:nth-child(2) {
+  grid-column: span 3;
+}
+
+.houseCard:nth-child(3) {
+  grid-column: span 4;
+}
+
+.houseCard:nth-child(4) {
+  grid-column: span 4;
+}
+
+.houseCard:nth-child(5) {
+  grid-column: span 3;
+}
+
+.houseImage {
+  z-index: -2;
+  object-fit: cover;
+  opacity: 0.78;
+  transition: transform 500ms var(--ease), opacity 300ms var(--ease);
+}
+
+.houseCard:hover .houseImage,
+.houseCard:focus-within .houseImage {
+  opacity: 0.95;
+  transform: scale(1.06);
+}
+
+.houseTint {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--house-color) 74%, #071b2b 26%), rgba(7, 27, 43, 0.3) 68%, rgba(7, 27, 43, 0.82));
+}
+
+.houseCardContent {
+  position: relative;
+  z-index: 1;
   display: flex;
+  height: 100%;
   flex-direction: column;
+  justify-content: flex-end;
   gap: var(--sp-2);
+  padding: clamp(var(--sp-4), 3vw, var(--sp-6));
+  color: #fff;
+}
+
+.houseIndex {
+  position: absolute;
+  top: clamp(var(--sp-4), 3vw, var(--sp-6));
+  right: clamp(var(--sp-4), 3vw, var(--sp-6));
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
 }
 
 .houseName {
   font-family: var(--font-heading);
-  font-size: var(--text-lg);
+  font-size: clamp(1.45rem, 2.8vw, 2.6rem);
   font-weight: 600;
-  color: var(--ink);
+  color: #ffffff;
   margin: 0;
+  line-height: 1;
 }
 
 .houseMotto {
-  font-size: var(--text-sm);
-  color: var(--ink-soft);
+  max-width: 32ch;
+  font-size: clamp(0.78rem, 1vw, 0.95rem);
+  color: rgba(255, 255, 255, 0.82);
   margin: 0;
   line-height: 1.4;
 }
 
+.houseLink {
+  align-self: flex-start;
+  margin-top: var(--sp-2);
+  color: #fff;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.houseLink:hover {
+  color: #bae6fd;
+}
+
+@media (max-width: 839px) {
+  .housesGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: minmax(210px, 1fr);
+  }
+
+  .houseCard:nth-child(1) {
+    grid-column: span 2;
+    grid-row: span 1;
+  }
+
+  .houseCard:nth-child(2),
+  .houseCard:nth-child(3),
+  .houseCard:nth-child(4),
+  .houseCard:nth-child(5) {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 520px) {
+  .housesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .houseCard:nth-child(1),
+  .houseCard:nth-child(2),
+  .houseCard:nth-child(3),
+  .houseCard:nth-child(4),
+  .houseCard:nth-child(5) {
+    grid-column: span 1;
+  }
+}
+
 /* 7. HOW TO APPLY: 3 numbered steps */
 .applySection {
-  background-color: var(--surface-2);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: var(--sp-6);
+  background: #fafafa;
+  border-radius: 12px;
+  padding: clamp(var(--sp-5), 5vw, var(--sp-8));
   display: flex;
   flex-direction: column;
+  padding: 50px 100px;
   gap: var(--sp-5);
 }
 
+.applySection .sectionHeading {
+  color: #17193d !important;
+}
 .stepsGrid {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--sp-5);
+  gap: var(--sp-6);
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 @media (min-width: 768px) {
   .stepsGrid {
     grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-4);
   }
 }
 
 .stepCard {
-  background-color: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: var(--sp-5);
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--sp-3);
+  min-width: 0;
+  padding: var(--sp-3);
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .stepsGrid::before {
+    position: absolute;
+    top: 28px;
+    right: 16.66%;
+    left: 16.66%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--sky-border), var(--accent));
+    content: '';
+  }
 }
 
 .stepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface);
   font-family: var(--font-heading);
-  font-size: var(--text-2xl);
+  font-size: var(--text-lg);
   font-weight: 600;
   color: var(--accent);
   line-height: 1;
+  box-shadow: 0 0 0 8px var(--surface-2);
 }
 
 .stepText {
-  color: var(--ink);
+  max-width: 24ch;
+  color: var(--ink-soft);
   margin: 0;
   font-size: var(--text-base);
   line-height: 1.5;
@@ -340,8 +567,38 @@
 
 .applyActions {
   display: flex;
-  justify-content: flex-start;
-  margin-top: var(--sp-2);
+  justify-content: center;
+  margin-top: var(--sp-3);
+}
+
+@media (max-width: 767px) {
+  .stepsGrid {
+    gap: 0;
+    padding-block: var(--sp-2);
+  }
+
+  .stepsGrid::before {
+    position: absolute;
+    top: 38px;
+    bottom: 38px;
+    left: 28px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent), var(--sky-border), var(--accent));
+    content: '';
+  }
+
+  .stepCard {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    align-items: center;
+    gap: var(--sp-4);
+    padding-block: var(--sp-4);
+    text-align: left;
+  }
+
+  .stepText {
+    max-width: none;
+  }
 }
 
 /* 8. QUOTE LINE: Plain text quote */
