@@ -7,17 +7,15 @@ import { LEADERSHIP_INFO } from '@/content/leadership';
 import { HOUSES_INFO, HOUSES_PHOTOS } from '@/content/houses';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import DiagonalMarqueeCarousel from '@/components/ui/DiagonalMarqueeCarousel';
+import { HomeGallery } from '@/components/site/HomeGallery';
 import { query } from '@/server/db';
 import { HeroSlideshow } from '@/components/hero/HeroSlideshow';
 import type { HeroSlideRecord } from '@/app/api/hero-slides/route';
 import styles from './page.module.css';
-
 import { readSession } from '@/server/session';
 import { canServer } from '@/server/permissions';
 import { getPageBySlug } from '@/server/cms';
 import { PageRenderer } from '@/components/cms/PageRenderer';
-
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
@@ -76,7 +74,6 @@ export default async function HomePage() {
     { src: '/assets/images/gallery/1/original/1688705352-cocurricular2.jpg', alt: 'Co-curricular science and technology exhibits' },
     { src: '/assets/images/facilities/Digicamp1.JPG', alt: 'Computer science and digital learning lab (Digicamp)' },
   ];
-
   return (
     <div className={styles.page}>
       <h1 className="srOnly">{SCHOOL_INFO.name} — Bheerkot, Syangja</h1>
@@ -186,25 +183,7 @@ export default async function HomePage() {
       </section>
 
       {/* BLOCK 5: DIAGONAL CAMPUS GALLERY */}
-      <section className={styles.homeGallerySection} aria-labelledby="photo-strip-heading">
-        <div className={styles.homeGalleryHeader}>
-          <h2 id="photo-strip-heading" className={styles.sectionHeading}>
-            Campus Activities
-          </h2>
-          <Link href="/gallery" className={styles.heroSecondaryLink}>
-            See the gallery &rarr;
-          </Link>
-        </div>
-        <DiagonalMarqueeCarousel
-          cards={photoStripImages.map((image, index) => ({
-            id: `home-gallery-${index}`,
-            url: image.src,
-            title: image.alt,
-          }))}
-          baseSpeed={125}
-        />
-      </section>
-
+      <HomeGallery images={photoStripImages} />
       {/* BLOCK 6: HOUSES BENTO GRID */}
       <section className={styles.housesSection} aria-labelledby="houses-heading">
           <div className={styles.sectionHeaderRow}>
