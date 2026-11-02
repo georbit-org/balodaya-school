@@ -13,9 +13,10 @@ import styles from './SiteHeader.module.css';
 const topLeftNav = [
   { label: 'Admissions', href: '/admissions', icon: 'applications' as const },
   { label: 'Academics', href: '/academics', icon: 'file-text' as const },
+  { label: 'News', href: '/news', icon: 'notices' as const },
 ];
 
-const topRightNav = [{ label: 'News', href: '/news', icon: 'notices' as const }];
+const topRightNav = [{}];
 
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -87,22 +88,6 @@ export function SiteHeader() {
         <div className={styles.rightHeaderGroup}>
           <nav className={`${styles.desktopNav} ${styles.rightDesktopNav}`} aria-label="Secondary Navigation">
             <ul className={styles.navList}>
-              {topRightNav.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={`${styles.navLink} ${isActive ? styles.activeLink : ''}`}
-                      aria-current={isActive ? 'page' : undefined}
-                    >
-                      <Icon name={item.icon} size={25} className={styles.navIcon} />
-                      {item.label}
-                    </Link>
-                  </li>
-                );
-              })}
-
               <li className={styles.moreItem} ref={moreRef}>
                 <button
                   type="button"
@@ -146,9 +131,7 @@ export function SiteHeader() {
               <span className={styles.phoneNumber}>{SCHOOL_INFO.contact.phone}</span>
               <span> Contact</span>
             </a>
-            {/* <Button href="/login" variant="secondary" size="sm">
-              Sign in
-            </Button> */}
+            
             <button
               type="button"
               className={styles.mobileToggle}
@@ -159,6 +142,9 @@ export function SiteHeader() {
               {mobileOpen ? <Icon name="x" size={20} /> : <Icon name="menu" size={20} />}
             </button>
           </div>
+          <Button href="/login" variant="secondary" size="sm">
+              Sign in
+          </Button>
         </div>
       </div>
 
