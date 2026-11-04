@@ -43,7 +43,13 @@
   gap: var(--sp-4);
 }
 
-@media (min-width: 640px) {
+@media (min-width: 600px) and (max-width: 1023px) {
+  .housesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
   .housesGrid {
     grid-template-columns: repeat(5, 1fr);
   }
@@ -127,7 +133,8 @@
   align-items: baseline;
   padding-block: var(--sp-2);
   border-bottom: 1px solid var(--line);
-  gap: var(--sp-3);
+  gap: var(--sp-2);
+  flex-wrap: wrap;
 }
 
 .councilName {
@@ -168,4 +175,20 @@
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: var(--sp-6);
+}
+
+@media (max-width: 640px) {
+  .page {
+    gap: var(--sp-6);
+    padding-block: var(--sp-4) var(--sp-7);
+  }
+
+  .sectionTitle {
+    font-size: clamp(1.4rem, 5vw, 1.85rem);
+  }
+
+  .councilGrid,
+  .activitiesCard {
+    padding: var(--sp-4);
+  }
 }

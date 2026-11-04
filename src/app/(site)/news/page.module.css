@@ -45,6 +45,14 @@
 .filterTabs {
   display: flex;
   gap: var(--sp-2);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.filterTabs::-webkit-scrollbar {
+  display: none;
 }
 
 .filterBtn {
@@ -57,6 +65,8 @@
   cursor: pointer;
   text-decoration: none;
   transition: all 0.15s var(--ease);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .filterBtn:hover {
@@ -101,6 +111,7 @@
   gap: var(--sp-3);
   font-size: var(--text-sm);
   color: var(--ink-faint);
+  flex-wrap: wrap;
 }
 
 .newsKindBadge {
@@ -116,6 +127,7 @@
   font-weight: 600;
   color: var(--ink);
   text-decoration: none;
+  overflow-wrap: break-word;
 }
 
 .newsTitleLink:hover {
@@ -153,6 +165,7 @@
   font-size: var(--text-base);
   line-height: 1.75;
   white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 .attachmentBox {
@@ -163,4 +176,25 @@
   background-color: var(--surface-2);
   border: 1px solid var(--line);
   border-radius: var(--radius);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .page {
+    gap: var(--sp-5);
+    padding-block: var(--sp-4) var(--sp-7);
+  }
+
+  .title {
+    font-size: clamp(1.75rem, 6vw, 2.25rem);
+  }
+
+  .newsCard,
+  .detailBody {
+    padding: var(--sp-4);
+  }
+
+  .newsTitleLink {
+    font-size: 1.25rem;
+  }
 }

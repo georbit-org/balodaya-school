@@ -140,3 +140,24 @@
   color: var(--ink-faint);
   margin: 0;
 }
+
+@media (max-width: 640px) {
+  .page {
+    gap: var(--sp-6);
+    padding-block: var(--sp-4) var(--sp-7);
+  }
+
+  .title {
+    font-size: clamp(1.75rem, 6vw, 2.25rem);
+  }
+
+  .levelCard {
+    padding: var(--sp-4);
+  }
+
+  .levelHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}

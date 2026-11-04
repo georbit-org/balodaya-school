@@ -11,7 +11,7 @@
 
 .textColumn {
   flex: 1;
-  min-width: 240px;
+  min-width: 200px;
 }
 
 .crumbs {
@@ -38,4 +38,21 @@
   align-items: center;
   gap: var(--sp-3);
   flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .header {
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-4);
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
 }

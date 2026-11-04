@@ -30,15 +30,14 @@
 
 .marqueeSection {
   position: relative;
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
+  width: 100%;
   overflow: hidden;
   background: #071b2b;
 }
 
 .marqueeIntro {
   position: absolute;
-  top: clamp(24px, 5vw, 72px);
+  top: clamp(20px, 4vw, 72px);
   right: var(--gutter);
   left: var(--gutter);
   z-index: 4;
@@ -63,7 +62,7 @@
   margin: 0;
   color: #fff;
   font-family: var(--font-heading);
-  font-size: clamp(2rem, 4vw, 4.2rem);
+  font-size: clamp(1.8rem, 4vw, 4.2rem);
   line-height: 1;
 }
 
@@ -81,6 +80,14 @@
   gap: var(--sp-2);
   border-bottom: 1px solid var(--line);
   margin-bottom: var(--sp-4);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.tabBar::-webkit-scrollbar {
+  display: none;
 }
 
 .tabBtn {
@@ -94,6 +101,8 @@
   color: var(--ink-soft);
   cursor: pointer;
   transition: all 0.15s var(--ease);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .tabBtn:hover {
@@ -125,6 +134,9 @@
   color: var(--ink-soft);
   cursor: pointer;
   transition: all 0.15s ease;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .catChip:hover {
@@ -140,7 +152,7 @@
 }
 
 .cardFooter {
-  padding: var(--sp-3) var(--sp-3) var(--sp-3) var(--sp-3);
+  padding: var(--sp-3);
   background: var(--surface);
   border-top: 1px solid var(--line);
 }
@@ -310,4 +322,20 @@
 .lightboxCounter {
   font-size: var(--text-sm);
   color: var(--ink-faint);
+}
+
+@media (max-width: 640px) {
+  .page {
+    gap: var(--sp-5);
+    padding-block: var(--sp-4) var(--sp-7);
+  }
+
+  .title {
+    font-size: clamp(1.75rem, 6vw, 2.25rem);
+  }
+
+  .tabBtn {
+    padding: var(--sp-2) var(--sp-3);
+    font-size: var(--text-sm);
+  }
 }

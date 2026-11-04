@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Newsreader, Hanken_Grotesk, Noto_Serif_Devanagari } from 'next/font/google';
 import './globals.css';
 import { SCHOOL_INFO } from '@/content/school';
@@ -36,6 +36,12 @@ export const metadata: Metadata = {
   icons: {
     icon: SCHOOL_INFO.logo,
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default async function RootLayout({

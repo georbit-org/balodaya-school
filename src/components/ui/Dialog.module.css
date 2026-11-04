@@ -46,6 +46,11 @@
   cursor: pointer;
   padding: var(--sp-1) var(--sp-2);
   border-radius: var(--radius);
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .closeBtn:hover {
@@ -56,6 +61,7 @@
 .body {
   padding: var(--sp-5);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 @keyframes fadeIn {
@@ -66,4 +72,26 @@
 @keyframes scaleIn {
   from { transform: scale(0.97); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  .overlay {
+    padding: var(--sp-2);
+  }
+
+  .dialog {
+    max-height: 95vh;
+  }
+
+  .header {
+    padding: var(--sp-3) var(--sp-4);
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .body {
+    padding: var(--sp-4);
+  }
 }

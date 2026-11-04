@@ -82,6 +82,7 @@
   background-color: var(--surface-2);
   border: 1px solid var(--line);
   border-radius: var(--radius);
+  gap: var(--sp-2);
 }
 
 .policyTitle {
@@ -93,6 +94,7 @@
   color: var(--accent);
   text-decoration: none;
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 .policyLink:hover {
@@ -163,10 +165,39 @@
   border: 1px solid var(--line);
   display: inline-block;
   width: fit-content;
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 .successText {
   color: var(--ink);
   margin: 0;
   line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .page {
+    gap: var(--sp-6);
+    padding-block: var(--sp-4) var(--sp-7);
+  }
+
+  .title {
+    font-size: clamp(1.75rem, 6vw, 2.25rem);
+  }
+
+  .policyCard,
+  .formCard,
+  .successCard {
+    padding: var(--sp-4);
+  }
+
+  .policyItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-2);
+  }
+
+  .referenceBadge {
+    font-size: 1.25rem;
+  }
 }

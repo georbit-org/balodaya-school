@@ -48,3 +48,17 @@
     transform: translateY(0);
   }
 }
+
+@media (max-width: 480px) {
+  .container {
+    right: var(--sp-3);
+    left: var(--sp-3);
+    bottom: var(--sp-4);
+  }
+
+  .toast {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+}

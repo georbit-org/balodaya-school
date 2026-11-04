@@ -8,6 +8,7 @@ html, body {
   overflow-x: clip;
   margin: 0;
   padding: 0;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -17,6 +18,10 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  -webkit-tap-highlight-color: transparent;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -77,6 +82,7 @@ img {
   max-width: var(--container);
   margin-inline: auto;
   padding-inline: var(--gutter);
+  width: 100%;
 }
 
 .srOnly, .visuallyHidden {

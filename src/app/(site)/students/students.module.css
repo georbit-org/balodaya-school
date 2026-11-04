@@ -89,17 +89,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: var(--sp-3);
 }
 
 .itemInfo {
   display: flex;
   flex-direction: column;
   gap: var(--sp-1);
+  min-width: 0;
 }
 
 .itemTitle {
   font-weight: 600;
   color: var(--ink);
+  overflow-wrap: break-word;
 }
 
 .itemMeta {
@@ -111,6 +114,7 @@
   color: var(--accent);
   text-decoration: none;
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 .itemLink:hover {
@@ -155,4 +159,38 @@
   color: var(--ink-soft);
   border-top: 1px solid var(--line);
   padding-top: var(--sp-3);
+}
+
+@media (max-width: 640px) {
+  .page {
+    gap: var(--sp-5);
+    padding-block: var(--sp-4) var(--sp-7);
+  }
+
+  .title {
+    font-size: clamp(1.75rem, 6vw, 2.25rem);
+  }
+
+  .panel,
+  .quoteCard {
+    padding: var(--sp-4);
+  }
+
+  .itemCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .itemLink {
+    align-self: flex-start;
+  }
+
+  .filterBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterBar > * {
+    width: 100%;
+  }
 }

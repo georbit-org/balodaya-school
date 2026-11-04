@@ -85,11 +85,15 @@
   color: var(--ink);
   font-size: var(--text-base);
   line-height: 1.5;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .detailLink {
   color: var(--accent);
   text-decoration: none;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .detailLink:hover {
@@ -134,4 +138,26 @@
   font-weight: 600;
   color: var(--success);
   margin: 0;
+}
+
+@media (max-width: 640px) {
+  .page {
+    gap: var(--sp-6);
+    padding-block: var(--sp-4) var(--sp-7);
+  }
+
+  .title {
+    font-size: clamp(1.75rem, 6vw, 2.25rem);
+  }
+
+  .infoCard,
+  .formCard,
+  .successBox {
+    padding: var(--sp-4);
+  }
+
+  .cardTitle,
+  .successHeading {
+    font-size: 1.25rem;
+  }
 }

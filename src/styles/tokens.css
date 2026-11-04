@@ -82,7 +82,7 @@
 
   /* Layout, Rails & Depth */
   --container: 1200px;
-  --gutter: clamp(16px, 4vw, 40px);
+  --gutter: clamp(14px, 4vw, 40px);
   --sidebar-w: 248px;
   --sidebar-w-collapsed: 68px;
   --topbar-h: 56px;

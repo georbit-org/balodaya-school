@@ -135,6 +135,7 @@
   border-radius: var(--radius);
   object-fit: cover;
   border: 1px solid var(--line);
+  flex-shrink: 0;
 }
 
 .leaderMeta {
@@ -234,18 +235,21 @@
 .downloadIcon {
   font-size: 1.5rem;
   color: var(--accent);
+  flex-shrink: 0;
 }
 
 .downloadDetails {
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-width: 0;
 }
 
 .downloadTitle {
   font-weight: 600;
   color: var(--ink);
   text-decoration: none;
+  overflow-wrap: break-word;
 }
 
 .downloadTitle:hover {
@@ -256,4 +260,34 @@
 .downloadMeta {
   font-size: var(--text-sm);
   color: var(--ink-faint);
+}
+
+@media (max-width: 640px) {
+  .page {
+    gap: var(--sp-6);
+    padding-block: var(--sp-4) var(--sp-7);
+  }
+
+  .sectionTitle {
+    font-size: clamp(1.4rem, 5vw, 1.85rem);
+  }
+
+  .card,
+  .leaderCard,
+  .teamBlock,
+  .rulesContainer {
+    padding: var(--sp-4);
+  }
+
+  .leaderPhoto {
+    width: 60px;
+    height: 60px;
+  }
+
+  .downloadRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-2);
+    padding: var(--sp-3);
+  }
 }

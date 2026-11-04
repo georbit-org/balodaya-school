@@ -528,6 +528,12 @@
   animation: contentFade 0.15s var(--ease);
 }
 
+@media (max-width: 479px) {
+  .contentArea {
+    padding: var(--sp-3);
+  }
+}
+
 @media (min-width: 768px) {
   .contentArea {
     padding: var(--sp-6);
