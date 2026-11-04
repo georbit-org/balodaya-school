@@ -16,7 +16,6 @@ const topLeftNav = [
   { label: 'News', href: '/news', icon: 'notices' as const },
 ];
 
-const topRightNav = [{}];
 
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);

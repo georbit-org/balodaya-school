@@ -127,7 +127,7 @@
   grid-column: 1;
   grid-row: 1;
   justify-self: start;
-  justify-content: left;
+  justify-content: flex-start;
   margin-left: -120px;
 }
 
@@ -137,12 +137,15 @@
   display: flex;
   align-items: center;
   justify-self: end;
-  gap: var(--sp-8);
-  margin-right: -60px;
+  gap: clamp(var(--sp-3), 1.8vw, var(--sp-5));
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin-right: -20px;
 }
 
 .rightDesktopNav {
   display: none;
+  flex-shrink: 0;
 }
 
 @media (min-width: 760px) {
@@ -156,15 +159,16 @@
   list-style: none;
   display: flex;
   align-items: center;
-  gap: var(--sp-7);
+  gap: var(--sp-6);
   margin: 0;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .navLink {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-family: var(--font-body);
   font-size: var(--text-sm);
   font-weight: 500;
@@ -173,6 +177,8 @@
   padding: var(--sp-1) var(--sp-2);
   border-radius: var(--radius);
   transition: color 0.15s var(--ease);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .navLink:hover {
@@ -186,6 +192,7 @@
 
 .moreItem {
   position: relative;
+  flex-shrink: 0;
 }
 
 .moreButton {
@@ -193,17 +200,28 @@
   border: none;
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-1);
+  gap: 6px;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.moreButton span {
+  white-space: nowrap;
+  display: inline-block;
 }
 
 .caret {
   font-size: 0.75rem;
   color: var(--ink-faint);
+  flex-shrink: 0;
+  margin-left: 2px;
+  line-height: 1;
 }
 
 .navIcon {
   color: currentColor;
+  flex-shrink: 0;
 }
 
 .dropdownMenu {
@@ -241,6 +259,7 @@
   align-items: center;
   gap: var(--sp-3);
   flex-shrink: 0;
+  margin: 0 25px;
 }
 
 @media (max-width: 1199px) and (min-width: 760px) {
@@ -255,11 +274,6 @@
 
   .rightHeaderGroup {
     gap: var(--sp-2);
-    margin-right: 0;
-  }
-
-  .leftDesktopNav {
-    margin-left: 0;
   }
 
   .brand {
